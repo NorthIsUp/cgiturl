@@ -20,6 +20,8 @@ if( NOT ICONV_INCLUDE_DIRS OR NOT ICONV_LIBRARIES )
     message( "=" )
     message( "= Warning: Iconv not found, cgiturl might not build =" )
     message( "=" )
+else()
+    message( "= Found Iconv =" )
 endif()
 
 #
