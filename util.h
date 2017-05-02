@@ -40,4 +40,6 @@ static inline std::string trimmed( std::string s ) {
     return s;
 }
 
+bool errorOnDisallowedChars( const std::string & type, const std::string & invalidChars );
+
 #endif

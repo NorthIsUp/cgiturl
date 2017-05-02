@@ -20,29 +20,40 @@
 #include <tuple>
 #include <vector>
 #include <string>
-#include <QString>
-#include <QMap>
-
-std::tuple< std::vector<std::string> , int > setIndex(int index);
+#include <map>
+#include <list>
 
 void create_codes_map();
 void create_rcodes_map();
 void create_sites_maps();
 void create_helper_maps();
 
-QMap< QString, QString > & getCodes();
-QMap< QString, QString > & getRCodes();
-QMap< QString, QString > & getSites();
-QMap< QString, QString > & getRSites();
-QMap< QString, QString > & getNames();
+std::map< std::string, std::string > & getCodes();
+std::map< std::string, std::string > & getRCodes();
+std::map< std::string, std::string > & getSites();
+std::map< std::string, std::string > & getRSites();
+std::map< std::string, std::string > & getNames();
 
-std::tuple< int, QMap<QString,QString>, int > process_meta_data( const std::vector<int> & _bits );
+std::tuple< int, std::map< std::string, std::string >, int >
+process_meta_data( const std::vector<int> & _bits );
+
 int BitsStart( std::vector<int> & dest );
-std::tuple<int, QStringList> BitsWithPreamble( std::vector<int> & dest, const QString & type, const QString & data );
 int BitsStop( std::vector<int> & dest );
-std::tuple< bool, int > BitsCompareSuffix( const std::vector<int> & bits, const QString & strBits );
 int BitsRemoveIfStartStop( std::vector<int> & bits );
-std::tuple< bool, int > BitsCompareSuffix( const std::vector<int> & bits, const QString & strBits );
-int insertBitsFromStrBits( std::vector<int> & dest, const QString & str );
+
+std::tuple< int, std::list< std::u32string > >
+BitsWithPreamble( std::vector<int> & dest, const std::u32string & type, const std::u32string & data );
+
+std::tuple< bool, int >
+BitsCompareSuffix( const std::vector<int> & bits, const std::u32string & strBits );
+
+std::tuple< bool, int >
+BitsCompareSuffix( const std::vector<int> & bits, const std::u32string & strBits );
+
+int
+insertBitsFromStrBits( std::vector<int> & dest, const std::string & str );
+
+std::wstring
+build_gcode( std::string & site, std::string & repo, std::string & rev, std::string & file, std::vector<int> & selectors );
 
 #endif // CODING_FUNCTIONS_H

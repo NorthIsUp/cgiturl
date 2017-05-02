@@ -32,6 +32,7 @@ SET( SRCS
     main.cpp
     coding_functions.cpp
     math_functions.cpp
+    util.cpp
 )
 
 add_executable( cgiturl ${SRCS} )

@@ -17,66 +17,41 @@
 
 #include "coding_functions.h"
 #include "math_functions.h"
+#include "util.h"
 #include <iostream>
 #include <sstream>
 #include <string>
 #include <algorithm>
-#include <QDebug>
-#include <QMap>
+#include <map>
+#include <list>
+#include <regex>
 
-QMap<QString, QString> codes;
-QMap<QString, QString> rcodes;
-QMap<QString, QString> sites;
-QMap<QString, QString> rsites;
-QMap<QString, QString> names;
+std::map<std::string, std::string> codes;
+std::map<std::string, std::string> rcodes;
+std::map<std::string, std::string> sites;
+std::map<std::string, std::string> rsites;
+std::map<std::string, std::string> names;
 
-// FUNCTION: setIndex {{{
-// Sets ZKL_INDEX_ZEKYLLS array which contains all
-// zekylls that potentially can be part of the index
-//
-std::tuple< std::vector<std::string>, int> setIndex(int index) {
-
-    std::vector<std::string> ZKL_INDEX_ZEKYLLS;
-
-    // Compute first element pointed to by index
-    int first=(index-1)*150;
-
-    int error=0;
-    for ( int i=first; i<=(first+150-1); i ++ ) {
-        // Convert the number to base 36 with leading zeros
-        std::tuple< std::vector<char>, int > result = convert_integer_to_base_36(i);
-        error += std::get<1>( result );
-        std::string zekyll = std::string( std::get<0>( result ).begin(), std::get<0>( result ).end() );
-        ZKL_INDEX_ZEKYLLS.push_back( zekyll );
-    }
-    // foreach(const string& s, ZKL_INDEX_ZEKYLLS) { qDebug() << QString(s.c_str()); }
-
-    return std::make_tuple( ZKL_INDEX_ZEKYLLS, error );
-}
-// }}}
-
-// input – bits decoded from zcode
-// first reply = bits to skip
-// second reply = ( file "" rev "" repo "" wordrev "" chksum "" site "" unused1 "" unused2 "" unused3 "" error "" )
-std::tuple< int, QMap<QString,QString>, int > process_meta_data( const std::vector<int> & _bits ) {
+std::tuple< int, std::map< std::string, std::string >, int >
+process_meta_data( const std::vector<int> & _bits ) {
     int size = _bits.size();
     std::vector<int> bits = _bits;
     std::reverse( bits.begin(), bits.end() );
 
     std::stringstream ss;
     std::copy( bits.begin(), bits.end(), std::ostream_iterator<int>(ss,""));
-    QString strbits = QString::fromLatin1( ss.str().c_str() );
+    std::string strbits = ss.str().c_str();
 
-    QRegExp rx("^[01]+$");
-    if( rx.indexIn(strbits) == -1 ) {
-        return std::make_tuple( 0, QMap<QString, QString>(), 120 );
+    std::regex bits_regex("^[01]+$");
+    if ( !std::regex_search( strbits, bits_regex ) ) {
+        return std::make_tuple( 0, std::map<std::string, std::string>(), 120 );
     }
 
     // We will use this value to compute how much bits were skipped
-    int init_len = strbits.count();
+    int init_len = strbits.size();
 
     int REPLY, error = 0;
-    QMap< QString, QString > decoded;
+    std::map< std::string, std::string > decoded;
     decoded["file"] = "";
     decoded["rev"] = "";
     decoded["repo"] = "";
@@ -89,15 +64,15 @@ std::tuple< int, QMap<QString,QString>, int > process_meta_data( const std::vect
     decoded["error"] = "";
 
     // Is there SS?
-    QString str = strbits.left( codes["ss"].count() );
+    std::string str = strbits.substr( 0, codes["ss"].size() );
     if( str == codes["ss"] ) {
-        strbits = strbits.mid( codes["ss"].count() );
-        str = strbits.left( codes["ss"].count() );
+        strbits = strbits.substr( codes["ss"].size(), std::string::npos );
+        str = strbits.substr( 0, codes["ss"].size() );
 
         // Is there immediate following SS?
         if( str == codes["ss"] ) {
             // We should skip one SS and there is nothing to decode
-            return std::make_tuple( codes["ss"].count(), decoded, 0 );
+            return std::make_tuple( codes["ss"].size(), decoded, 0 );
         }
 
         //
@@ -105,16 +80,16 @@ std::tuple< int, QMap<QString,QString>, int > process_meta_data( const std::vect
         //
 
         // keys of the 'decoded' hash
-        QString current_selector="error";
+        std::string current_selector = "error";
         int trylen;
-        QString mat, trystr;
+        std::string mat, trystr;
         while ( 1 ) {
             mat="";
             for ( trylen = 6; trylen <= 7; trylen ++ ) {
                 // Take substring of len $trylen and check if
                 // it matches any Huffman code
-                trystr = strbits.left( trylen );
-                if( rcodes.contains( trystr )) {
+                trystr = strbits.substr( 0, trylen );
+                if( rcodes.count( trystr ) ) {
                     mat = rcodes[ trystr ];
                     break;
                 }
@@ -125,12 +100,12 @@ std::tuple< int, QMap<QString,QString>, int > process_meta_data( const std::vect
             }
 
             // Skip decoded bits
-            strbits = strbits.mid( trylen );
+            strbits = strbits.substr( trylen, std::string::npos );
 
             // Handle what has been matched, either selector or data
             if( mat == "ss" ) {
                 break;
-            } else if( decoded.contains(mat) ) {
+            } else if( decoded.count( mat ) ) {
                 current_selector = mat;
             } else {
                 if( current_selector == "site" ) {
@@ -140,7 +115,7 @@ std::tuple< int, QMap<QString,QString>, int > process_meta_data( const std::vect
             }
         }
 
-        REPLY = init_len - strbits.count();
+        REPLY = init_len - strbits.size();
     } else {
         REPLY = 0;
     }
@@ -148,15 +123,14 @@ std::tuple< int, QMap<QString,QString>, int > process_meta_data( const std::vect
     return std::make_tuple( REPLY, decoded, error );
 }
 
-int insertBitsFromStrBits( std::vector<int> & dest, const QString & str ) {
+int insertBitsFromStrBits( std::vector<int> & dest, const std::string & str ) {
     int error = 0;
-    QStringList list = str.split( "", QString::SkipEmptyParts );
     bool was = false;
-    foreach( const QString & b, list ) {
+    for ( std::string::const_iterator it = str.begin() ; it < str.end(); it++ ) {
         was = true;
-        if( b == "1" ) {
+        if( *it == '1' ) {
             dest.push_back( 1 );
-        } else if( b == "0" ) {
+        } else if( *it == '0' ) {
             dest.push_back( 0 );
         } else {
             error += 157;
@@ -178,15 +152,14 @@ int BitsStart( std::vector<int> & dest ) {
     return error;
 }
 
-std::tuple< std::vector<int>, int, QStringList > BitsForString( const QString & data ) {
-    QStringList invalidChars;
+std::tuple< std::vector<int>, int, std::string > BitsForString( const std::string & data ) {
+    std::string invalidChars;
     int error = 0;
     std::vector<int> out;
-    QStringList list = data.trimmed().split( "", QString::SkipEmptyParts );
-    foreach( const QString & l, list ) {
-        QString strbits = codes[l];
-        if( strbits.count() == 0 ) {
-            invalidChars << l;
+    for ( std::string::const_iterator it = data.begin() ; it < data.end(); it++ ) {
+        std::string strbits = codes[ std::string( 1,*it ) ];
+        if( strbits.size() == 0 ) {
+            invalidChars.append( 1, *it );
             error += 163;
         } else {
             error += insertBitsFromStrBits( out, strbits );
@@ -196,8 +169,8 @@ std::tuple< std::vector<int>, int, QStringList > BitsForString( const QString & 
     return std::make_tuple( out, error, invalidChars );
 }
 
-std::tuple<int, QStringList> BitsWithPreamble( std::vector<int> & dest, const QString & type, const QString & data ) {
-    QStringList invalidChars;
+std::tuple<int, std::string> BitsWithPreamble( std::vector<int> & dest, const std::string & type, const std::string & data ) {
+    std::string invalidChars;
     int error;
     std::vector<int> bits;
     std::tie( bits, error, invalidChars ) = BitsForString( data );
@@ -206,8 +179,8 @@ std::tuple<int, QStringList> BitsWithPreamble( std::vector<int> & dest, const QS
     }
 
     if( bits.size() > 0 ) {
-        QString preambleStrBits = codes[ type ].trimmed();
-        if( preambleStrBits.count() > 0 ) {
+        std::string preambleStrBits = codes[ type ];
+        if( preambleStrBits.size() > 0 ) {
             // Preamble
             int newerror = insertBitsFromStrBits( dest, preambleStrBits );
             if( newerror ) {
@@ -235,21 +208,20 @@ int BitsStop( std::vector<int> & dest ) {
 
 // FUNCTION: BitsCompareSuffix {{{2
 // Compares suffix of the longer "$1" with whole "$2"
-std::tuple< bool, int > BitsCompareSuffix( const std::vector<int> & bits, const QString & strBits ) {
+std::tuple< bool, int > BitsCompareSuffix( const std::vector<int> & bits, const std::string & strBits ) {
     int error = 0;
 
-    QStringList list = strBits.trimmed().split( "", QString::SkipEmptyParts );
-    std::vector<int> bits2;
-
-    if( list.size() == 0 ) {
+    std::string tstrBits = trimmed( strBits );
+    if( tstrBits.size() == 0 ) {
         error += 193;
         return std::make_tuple( true, error );
     }
 
-    foreach( const QString & b, list ) {
-        if( b == "1" ) {
+    std::vector<int> bits2;
+    for ( std::string::const_iterator it = tstrBits.begin(); it < tstrBits.end(); it ++ ) {
+        if( *it == '1' ) {
             bits2.push_back( 1 );
-        } else if ( b == "0" ) {
+        } else if ( *it == '0' ) {
             bits2.push_back( 0 );
         } else {
             error += 233;
@@ -292,14 +264,14 @@ int BitsRemoveIfStartStop( std::vector<int> & bits ) {
     error += error ? 2770000 : 0;
 
     if( result ) {
-        bits.erase( bits.end() - codes["ss"].count(), bits.end() );
+        bits.erase( bits.end() - codes["ss"].size(), bits.end() );
 
         int error2;
         std::tie( result, error2 ) = BitsCompareSuffix( bits, codes[ "ss" ] );
         error += error2 ? error2 + 3110000 : 0;
 
         if( result ) {
-            bits.erase( bits.end() - codes["ss"].count(), bits.end() );
+            bits.erase( bits.end() - codes["ss"].size(), bits.end() );
             // Two consecutive SS bits occured, correct removal
         } else {
             // We couldn't remove second SS bits, so it means
@@ -496,8 +468,104 @@ void create_helper_maps() {
     names["site"] = "site";
 }
 
-QMap< QString, QString > & getCodes() { return codes; }
-QMap< QString, QString > & getRCodes() { return rcodes; }
-QMap< QString, QString > & getSites() { return sites; }
-QMap< QString, QString > & getRSites() { return rsites; }
-QMap< QString, QString > & getNames() { return names; }
+std::wstring build_gcode( std::string & site, std::string & repo, std::string & rev, std::string & file, std::vector<int> & selectors )
+{
+    std::vector<int> bits;
+
+    // Version
+    bits.push_back( 0 );
+    bits.push_back( 0 );
+
+    bits.insert( bits.end(), selectors.begin(), selectors.end() );
+    std::reverse( bits.begin(), bits.end() );
+
+    std::vector<int> appendix;
+    int error=0, newerror;
+    std::string invalidChars;
+
+    // Meta-data start
+    error += BitsStart( appendix );
+
+    // Revision
+    std::tie( newerror, invalidChars ) = BitsWithPreamble( appendix, "rev",  rev );
+    error += newerror;
+    errorOnDisallowedChars( "rev", invalidChars );
+
+    // File name
+    std::tie( newerror, invalidChars ) = BitsWithPreamble( appendix, "file", file );
+    error += newerror;
+    errorOnDisallowedChars( "file", invalidChars );
+
+    // User/repo
+    std::tie( newerror, invalidChars ) = BitsWithPreamble( appendix, "repo", repo );
+    error += newerror;
+    errorOnDisallowedChars( "repo", invalidChars );
+
+    // Site
+    int siteId = 2;
+    // Github is the default
+    if( siteId != 1 ) {
+        std::string strSiteId = "2";
+        std::tie( newerror, invalidChars ) = BitsWithPreamble( appendix, "site", strSiteId );
+        error += newerror;
+        errorOnDisallowedChars( "site", invalidChars );
+    }
+
+    // Meta-data end
+    error += BitsStop( appendix );
+
+    // Empty meta-data?
+    error += BitsRemoveIfStartStop( appendix );
+
+    if( appendix.size() == 0 ) {
+        std::string rev_str_bits = trimmed(getCodes()[ "ss" ]);
+        std::reverse(rev_str_bits.begin(), rev_str_bits.end());
+
+        bool result;
+        std::tie( result, newerror ) = BitsCompareSuffix( bits, rev_str_bits );
+        error += newerror;
+        if( result ) {
+            // No metadata but 'ss' at end – add another one to
+            // mark that the 'ss' is a real data
+            error += insertBitsFromStrBits( bits, rev_str_bits );
+        }
+    } else {
+        // Append meta-data bits
+        // They go to end, and are reversed, so to decode, one can
+        // first reverse whole sequence, to have meta-data waiting
+        // in the beginning, in order
+        std::reverse( appendix.begin(), appendix.end() );
+        bits.insert( bits.end(), appendix.begin(), appendix.end() );
+    }
+
+    // Create Zcode
+    std::vector<wchar_t> zcode;
+    std::vector<int> numbers;
+    int error2;
+    std::tie( zcode, numbers, error2 ) = encode_zcode_arr01( bits );
+    error += error2;
+
+    // Convert Zcode to QString
+    std::wstring zcode2( zcode.begin(), zcode.end() );
+
+    if( error ) {
+        int exam = error - 1630000;
+        // Display if there is other error besides use of invalid characters
+        if( exam % 163 ) {
+            std::cout << "Warning: Computation ended with code " << error << std::endl;
+        } else {
+            std::cout << "Allowed characters are: a-z, A-Z, 0-9, /, ~, -, _, ., space" << std::endl;
+        }
+
+        return std::wstring(); 
+    } else {
+        return zcode2;
+    }
+}
+
+
+std::map< std::string, std::string > & getCodes() { return codes; }
+std::map< std::string, std::string > & getRCodes() { return rcodes; }
+std::map< std::string, std::string > & getSites() { return sites; }
+std::map< std::string, std::string > & getRSites() { return rsites; }
+std::map< std::string, std::string > & getNames() { return names; }
