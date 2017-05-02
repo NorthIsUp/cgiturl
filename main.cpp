@@ -85,8 +85,14 @@ int main( int argc, char * argv[]) {
 
     std::string site="2";
     std::string repo="psprint/zkl";
-    std::string rev( options[REV].last()->arg );
-    std::string file( options[PATH].last()->arg );
+    std::string rev;
+    if ( options[REV].count() > 0 ) {
+        rev = std::string( options[REV].last()->arg );
+    }
+    std::string file;
+    if ( options[PATH].count() > 0 ) {
+        file = std::string( options[PATH].last()->arg );
+    }
     std::vector<int> selectors;
 
     std::wstring gcode = build_gcode( site, repo, rev, file, selectors );
