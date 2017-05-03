@@ -468,7 +468,15 @@ void create_helper_maps() {
     names["site"] = "site";
 }
 
-std::wstring build_gcode( std::string & site, std::string & repo, std::string & rev, std::string & file, std::vector<int> & selectors )
+std::wstring build_gcode(
+        std::string & protocol,
+        std::string & user,
+        std::string & site,
+        std::string & port,
+        std::string & repo,
+        std::string & rev,
+        std::string & file,
+        std::vector<int> & selectors )
 {
     std::vector<int> bits;
 

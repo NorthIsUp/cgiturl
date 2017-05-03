@@ -8,6 +8,7 @@
 #include <string>
 #include <iostream>
 #include <locale>
+#include <regex>
 
 struct Arg: public option::Arg
 {
@@ -86,19 +87,76 @@ int main( int argc, char * argv[]) {
     }
 
     if ( options[DECODE].count() == 0 ) {
-        std::string site="2";
-        std::string repo="psprint/zkl";
+        if ( parse.nonOptionsCount() == 0 ) {
+            fprintf( stderr, "URL (like https://github.com/...) is needed as argument, aborting\n" );
+            fflush( stderr );
+            return 2;
+        }
+
+        std::string protocol;
+        std::string user;
+        std::string site;
+        std::string port;
+        std::string upath;
         std::string rev;
+        std::string file;
+        bool result;
+        std::string arg( parse.nonOption(0) );
+        std::wstring warg( strlen( parse.nonOption(0) ), L' ' );
+        warg.resize( std::mbstowcs( &warg[0], parse.nonOption(0), strlen( parse.nonOption(0) ) ) );
+
+        //
+        // Correct matches
+        //
+
+        std::smatch m;
+        std::regex r( "(git|http|https|ftp|ftps)://([a-zA-Z0-9._~-]+)(:[0-9]+)?/([a-zA-Z0-9./_~:-]+)" );
+        result = regex_match( arg, m, r ); // result returns true
+        if ( result )
+            protocol=m[1]; site=m[2]; port=m[3]; upath=m[4];
+
+        if ( ! result ) {
+            r = std::regex( "rsync://([a-zA-Z0-9._~-]+)/([a-zA-Z0-9./_~:-]+)" );
+            m = std::smatch();
+            result = regex_match( arg, m, r ); // result returns true
+            if ( result )
+                protocol="rsync"; site=m[1]; upath=m[2];
+        }
+
+        if ( ! result ) {
+            r = std::regex( "ssh://([a-zA-Z0-9._~-]+@)?([a-zA-Z0-9._~-]+)(:[0-9]+)?/([a-zA-Z0-9./_~:-]+)" );
+            m = std::smatch();
+            result = regex_match( arg, m, r ); // result returns true
+            if ( result )
+                protocol="ssh"; user=m[1]; site=m[2]; port=m[3]; upath=m[4];
+        }
+
+        if ( ! result ) {
+            r = std::regex( "([a-zA-Z0-9._~-]+@)?([a-zA-Z0-9._~-]+):([a-zA-Z0-9./_~:-]?[a-zA-Z0-9._~:-][a-zA-Z0-9./_~:-]*)" );
+            m = std::smatch();
+            result = regex_match( arg, m, r ); // result returns true
+            if ( result )
+                protocol="ssh"; user=m[1]; site=m[2]; upath=m[3];
+        }
+
+
         if ( options[REV].count() > 0 ) {
             rev = std::string( options[REV].last()->arg );
         }
-        std::string file;
         if ( options[PATH].count() > 0 ) {
             file = std::string( options[PATH].last()->arg );
         }
         std::vector<int> selectors;
 
-        std::wstring gcode = build_gcode( site, repo, rev, file, selectors );
+        std::cout << "Protocol: " << protocol << std::endl;
+        std::cout << "User:     " << user << std::endl;
+        std::cout << "Site:     " << site << std::endl;
+        std::cout << "Port:     " << port << std::endl;
+        std::cout << "Repo:     " << upath << std::endl;
+        std::cout << "Revision: " << rev << std::endl;
+        std::cout << "File:     " << file << std::endl;
+
+        std::wstring gcode = build_gcode( protocol, user, site, port, upath, rev, file, selectors );
         std::wcout << gcode << std::endl;
     } else {
         std::wstring gcode( strlen( options[DECODE].last()->arg ), L' ');

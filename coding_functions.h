@@ -54,6 +54,14 @@ int
 insertBitsFromStrBits( std::vector<int> & dest, const std::string & str );
 
 std::wstring
-build_gcode( std::string & site, std::string & repo, std::string & rev, std::string & file, std::vector<int> & selectors );
+build_gcode(
+        std::string & protocol,
+        std::string & user,
+        std::string & site,
+        std::string & port,
+        std::string & repo,
+        std::string & rev,
+        std::string & file,
+        std::vector<int> & selectors );
 
 #endif // CODING_FUNCTIONS_H
