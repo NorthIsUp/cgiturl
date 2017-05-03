@@ -26,10 +26,19 @@
 #include <list>
 #include <regex>
 
+const char input_characters[67]={ '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h',
+                      'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
+                      'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H',
+                      'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
+                      '.', '_', '~', '-', '\0' };
+
+const char *incharacters_begin = &input_characters[0];
+const char *incharacters_end = &input_characters[66];
+
 std::map<std::string, std::string> codes;
 std::map<std::string, std::string> rcodes;
-std::map<std::string, std::string> sites;
-std::map<std::string, std::string> rsites;
+std::map<std::string, std::string> sites_flags;
+std::map<std::string, std::string> rsites_flags;
 std::map<std::string, std::string> names;
 std::map<std::string, std::string> server_site;
 std::map<std::string, std::string> rserver_site;
@@ -52,18 +61,23 @@ process_meta_data( const std::vector<int> & _bits ) {
     // We will use this value to compute how much bits were skipped
     int init_len = strbits.size();
 
-    int REPLY, error = 0;
+    int REPLY, inlne=0, error = 0;
     std::map< std::string, std::string > decoded;
-    decoded["file"] = "";
-    decoded["rev"] = "";
-    decoded["repo"] = "";
-    decoded["wordrev"] = "";
-    decoded["chksum"] = "";
-    decoded["site"] = "";
-    decoded["unused1"] = "";
-    decoded["unused2"] = "";
-    decoded["unused3"] = "";
-    decoded["error"] = "";
+    decoded["file"]         = "";
+    decoded["rev"]          = "";
+    decoded["repo"]         = "";
+    decoded["wordrev"]      = "";
+    decoded["proto"]        = "";
+    decoded["user"]         = "";
+    decoded["site"]         = "";
+    decoded["site_inline"]  = "";
+    decoded["flags"]        = "";
+    decoded["port"]         = "";
+    decoded["unused1"]      = "";
+    decoded["unused2"]      = "";
+    decoded["unused3"]      = "";
+    decoded["unused4"]      = "";
+    decoded["error"]        = "";
 
     // Is there SS?
     std::string str = strbits.substr( 0, codes["ss"].size() );
@@ -105,15 +119,64 @@ process_meta_data( const std::vector<int> & _bits ) {
             strbits = strbits.substr( trylen, std::string::npos );
 
             // Handle what has been matched, either selector or data
-            if( mat == "ss" ) {
+            if ( mat == "ss" ) {
                 break;
-            } else if( decoded.count( mat ) ) {
+            } else if ( mat == "repo_rev_usr" ) {
+                if ( current_selector == "repo" ) {
+                    current_selector = "rev";
+                } else if ( current_selector == "rev" ) {
+                    current_selector = "user";
+                } else {
+                    current_selector = "repo";
+                }
+            } else if ( mat == "site_flags" ) {
+                if ( current_selector == "site_flags" ) {
+                    inlne = 1;
+                } else {
+                    inlne = 0;
+                    current_selector = "site_flags";
+
+#if 0
+                    // Short path for port number - conditional constant 16 bits
+                    if [[ "${strbits[1]}" = "1" ]]; then
+                        local port_bits="${strbits[2,17]}"
+                        decoded[port]=$(( [#10] 2#$port_bits ))
+                        strbits="${strbits[18,-1]}"
+                    else
+                        strbits="${strbits[2,-1]}"
+                    fi
+#endif
+
+#if 0
+                    # Short path for protocol - always 3 bits
+                    local proto_bits="${strbits[1,3]}"
+                    decoded[proto]="${rproto_code[$proto_bits]}"
+                    strbits="${strbits[4,-1]}"
+#endif
+                }
+            } else if ( decoded.count( mat ) ) {
+                inlne = 0;
                 current_selector = mat;
             } else {
-                if( current_selector == "site" ) {
-                    mat = rsites[ mat ];
+                if ( current_selector == "site_flags" ) {
+                    if ( inlne ) {
+                        decoded[ "site_inline" ].append( mat );
+                    } else {
+                        ptrdiff_t pos1 = std::find( incharacters_begin, incharacters_end, mat.c_str()[0] ) - incharacters_begin;
+                        ptrdiff_t pos2 = std::find( incharacters_begin, incharacters_end, '3') - incharacters_begin;
+                        if ( pos1 > pos2 ) {
+                            mat = rsites_flags[ mat ];
+                            if ( decoded[ "flags" ].size() > 0 )
+                                decoded[ "flags" ].append( "," );
+                            decoded[ "flags" ].append( mat );
+                        } else {
+                            mat = rsites_flags[ mat ];
+                            decoded[ "site" ] = mat;
+                        }
+                    }
+                } else {
+                    decoded[ current_selector ].append( mat );
                 }
-                decoded[ current_selector ].append( mat );
             }
         }
 
@@ -229,12 +292,12 @@ std::tuple<int, std::string> BitsProtoSitePort( std::vector<int> & dest, const s
 
     if ( skip ) {
         // To repeat site_flags preamble indicating inline-site
-        std::tie( newerror, newInvalidChars ) = BitsWithPreamble( dest, "site", "", true );
+        std::tie( newerror, newInvalidChars ) = BitsWithPreamble( dest, "site_flags", "", true );
         invalidChars += newInvalidChars;
         error += newerror;
 
         // Following inline server, with the repeating preamble
-        std::tie( newerror, newInvalidChars ) = BitsWithPreamble( dest, "site", server );
+        std::tie( newerror, newInvalidChars ) = BitsWithPreamble( dest, "site_flags", server );
         invalidChars += newInvalidChars;
         error += newerror;
     } else {
@@ -242,7 +305,7 @@ std::tuple<int, std::string> BitsProtoSitePort( std::vector<int> & dest, const s
         if ( site == "gh" )
             skip = true;
 
-        std::string site_lt = sites[site];
+        std::string site_lt = sites_flags[site];
         if ( site_lt.size() == 0 )
             skip = true;
 
@@ -348,16 +411,17 @@ int BitsRemoveIfStartStop( std::vector<int> & bits ) {
 }
 
 void create_codes_map() {
-    codes["ss"]      = "101000";
-    codes["file"]    = "100111";
-    codes["rev"]     = "101110";
-    codes["repo"]    = "101111";
-    codes["wordrev"] = "101100";
-    codes["chksum"]  = "101101";
-    codes["site"]    = "100010";
-    codes["unused1"] = "100011";
-    codes["unused2"] = "100000";
-    codes["unused3"] = "1100110";
+    codes["ss"]         = "100111";
+    codes["file"]       = "101000";
+    codes["rev"]        = "101110";
+    codes["repo"]       = "101111";
+    codes["wordrev"]    = "101100";
+    codes["site_flags"] = "100010";
+    codes["unused1"]    = "100011";
+    codes["unused3"]    = "1100110";
+    codes["unused4"]    = "101101";
+
+    codes[":"] = "100000";
     codes["b"] = "110001";
     codes["a"] = "110000";
     codes["9"] = "101011";
@@ -429,16 +493,17 @@ void create_codes_map() {
 }
 
 void create_rcodes_map() {
-    rcodes["101000"] = "ss";
-    rcodes["100111"] = "file";
-    rcodes["101110"] = "rev";
-    rcodes["101111"] = "repo";
-    rcodes["101100"] = "wordrev";
-    rcodes["101101"] = "chksum";
-    rcodes["100010"] = "site";
-    rcodes["100011"] = "unused1";
-    rcodes["100000"] = "unused2";
+    rcodes["100111"]  = "ss";
+    rcodes["101000"]  = "file";
+    rcodes["101110"]  = "rev";
+    rcodes["101111"]  = "repo";
+    rcodes["101100"]  = "wordrev";
+    rcodes["100010"]  = "site_flags";
+    rcodes["100011"]  = "unused1";
     rcodes["1100110"] = "unused3";
+    rcodes["101101"]  = "unused4";
+
+    rcodes["100000"] = ":";
     rcodes["110001"] = "b";
     rcodes["110000"] = "a";
     rcodes["101011"] = "9";
@@ -510,13 +575,13 @@ void create_rcodes_map() {
 }
 
 void create_sites_maps() {
-        sites["gh"] = "1";
-        sites["bb"] = "2";
-        sites["gl"] = "3";
+        sites_flags["gh"] = "1";
+        sites_flags["bb"] = "2";
+        sites_flags["gl"] = "3";
 
-        rsites["1"] = "gh";
-        rsites["2"] = "bb";
-        rsites["3"] = "gl";
+        rsites_flags["1"] = "gh";
+        rsites_flags["2"] = "bb";
+        rsites_flags["3"] = "gl";
 }
 
 void create_helper_maps() {
@@ -637,6 +702,6 @@ std::wstring build_gcode(
 
 std::map< std::string, std::string > & getCodes() { return codes; }
 std::map< std::string, std::string > & getRCodes() { return rcodes; }
-std::map< std::string, std::string > & getSites() { return sites; }
-std::map< std::string, std::string > & getRSites() { return rsites; }
+std::map< std::string, std::string > & getSitesFlags() { return sites_flags; }
+std::map< std::string, std::string > & getRSitesFlags() { return rsites_flags; }
 std::map< std::string, std::string > & getNames() { return names; }

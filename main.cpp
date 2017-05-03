@@ -173,6 +173,9 @@ int main( int argc, char * argv[]) {
             std::map< std::string, std::string > decoded;
             tie( to_skip, decoded, error ) = process_meta_data( bits );
 
+            if ( decoded[ "site" ].size() == 0 ) {
+                decoded[ "site" ] = decoded[ "site_inline" ];
+            }
             std::cout << "Site: " << decoded["site"] << std::endl;
             std::cout << "Repo: " << decoded["repo"] << std::endl;
             std::cout << "Rev: " << decoded["rev"] << std::endl;
