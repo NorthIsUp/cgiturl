@@ -31,6 +31,8 @@ std::map<std::string, std::string> rcodes;
 std::map<std::string, std::string> sites;
 std::map<std::string, std::string> rsites;
 std::map<std::string, std::string> names;
+std::map<std::string, std::string> server_site;
+std::map<std::string, std::string> rserver_site;
 
 std::tuple< int, std::map< std::string, std::string >, int >
 process_meta_data( const std::vector<int> & _bits ) {
@@ -169,7 +171,7 @@ std::tuple< std::vector<int>, int, std::string > BitsForString( const std::strin
     return std::make_tuple( out, error, invalidChars );
 }
 
-std::tuple<int, std::string> BitsWithPreamble( std::vector<int> & dest, const std::string & type, const std::string & data ) {
+std::tuple<int, std::string> BitsWithPreamble( std::vector<int> & dest, const std::string & type, const std::string & data, bool force ) {
     std::string invalidChars;
     int error;
     std::vector<int> bits;
@@ -178,7 +180,7 @@ std::tuple<int, std::string> BitsWithPreamble( std::vector<int> & dest, const st
         error += 1630000;
     }
 
-    if( bits.size() > 0 ) {
+    if( bits.size() > 0 || force ) {
         std::string preambleStrBits = codes[ type ];
         if( preambleStrBits.size() > 0 ) {
             // Preamble
@@ -192,6 +194,62 @@ std::tuple<int, std::string> BitsWithPreamble( std::vector<int> & dest, const st
             dest.insert( dest.end(), bits.begin(), bits.end() );
         } else {
             error += 2330000;
+        }
+    }
+
+    return std::make_tuple( error, invalidChars );
+}
+
+std::tuple<int, std::string> BitsProtoSitePort( std::vector<int> & dest, const std::string & proto, std::string server, const std::string & port ) {
+    int error = 0;
+    int newerror;
+    std::string invalidChars, newInvalidChars;
+
+    //
+    // Port
+    //
+
+    //
+    // Protocol
+    //
+
+    //
+    // Site
+    //
+
+    bool skip=false;
+    std::string site;
+
+    std::transform( server.begin(), server.end(), server.begin(), ::tolower );
+    if ( server_site.count( server ) > 0 ) {
+        site = server_site[ server ];
+    } else {
+        skip = true;
+    }
+
+    if ( skip ) {
+        // To repeat site_flags preamble indicating inline-site
+        std::tie( newerror, newInvalidChars ) = BitsWithPreamble( dest, "site", "", true );
+        invalidChars += newInvalidChars;
+        error += newerror;
+
+        // Following inline server, with the repeating preamble
+        std::tie( newerror, newInvalidChars ) = BitsWithPreamble( dest, "site", server );
+        invalidChars += newInvalidChars;
+        error += newerror;
+    } else {
+        // Github is the default site
+        if ( site == "gh" )
+            skip = true;
+
+        std::string site_lt = sites[site];
+        if ( site_lt.size() == 0 )
+            skip = true;
+
+        if ( ! skip ) {
+            std::tie( newerror, newInvalidChars ) = BitsWithPreamble( dest, "site", site_lt );
+            invalidChars += newInvalidChars;
+            error += newerror;
         }
     }
 
@@ -468,6 +526,16 @@ void create_helper_maps() {
     names["site"] = "site";
 }
 
+void create_server_maps() {
+    server_site["github.com"]    = "gh";
+    server_site["bitbucket.org"] = "bb";
+    server_site["gitlab.com"]    = "gl";
+
+    rserver_site["gh"] = "github.com";
+    rserver_site["bb"] = "bitbucket.org";
+    rserver_site["gl"] = "gitlab.com";
+}
+
 std::wstring build_gcode(
         std::string & protocol,
         std::string & user,
@@ -510,14 +578,9 @@ std::wstring build_gcode(
     errorOnDisallowedChars( "repo", invalidChars );
 
     // Site
-    int siteId = 2;
-    // Github is the default
-    if( siteId != 1 ) {
-        std::string strSiteId = "2";
-        std::tie( newerror, invalidChars ) = BitsWithPreamble( appendix, "site", strSiteId );
-        error += newerror;
-        errorOnDisallowedChars( "site", invalidChars );
-    }
+    std::tie( newerror, invalidChars ) = BitsProtoSitePort( appendix, protocol, site, port );
+    error += newerror;
+    errorOnDisallowedChars( "site", invalidChars );
 
     // Meta-data end
     error += BitsStop( appendix );

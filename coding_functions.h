@@ -27,6 +27,7 @@ void create_codes_map();
 void create_rcodes_map();
 void create_sites_maps();
 void create_helper_maps();
+void create_server_maps();
 
 std::map< std::string, std::string > & getCodes();
 std::map< std::string, std::string > & getRCodes();
@@ -41,8 +42,8 @@ int BitsStart( std::vector<int> & dest );
 int BitsStop( std::vector<int> & dest );
 int BitsRemoveIfStartStop( std::vector<int> & bits );
 
-std::tuple< int, std::list< std::u32string > >
-BitsWithPreamble( std::vector<int> & dest, const std::u32string & type, const std::u32string & data );
+std::tuple< int, std::string >
+BitsWithPreamble( std::vector<int> & dest, const std::string & type, const std::string & data, bool force = false );
 
 std::tuple< bool, int >
 BitsCompareSuffix( const std::vector<int> & bits, const std::u32string & strBits );
