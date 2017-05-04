@@ -140,6 +140,41 @@ int main( int argc, char * argv[]) {
                 protocol="ssh"; user=m[1]; site=m[2]; upath=m[3];
         }
 
+        //
+        // Error matches
+        //
+
+        std::wsmatch wm;
+        std::wregex wr( L"(git|http|https|ftp|ftps)://([^/:]+)(:[^/]+)?/(.+)" );
+
+        if ( ! result ) {
+            result = regex_match( warg, wm, wr ); // result returns true
+            if ( result ) {
+                bool result2 = true;
+                if ( wm[3].str().size() > 0 ) {
+                    std::wsmatch wm2;
+                    std::wregex wr2( L"^:[0-9]+$" );
+                    result2 = regex_match( wm[3].str(), wm2, wr2 ); // result returns true
+                    if ( ! result2 ) {
+                        std::wcout << L"Incorrect port number: " << wm[3].str().substr( 1, std::string::npos ) << std::endl;
+                    }
+                }
+
+                if ( result2 ) {
+                    std::cout << "Forbidden characters used in URL, allowed are [a-zA-Z0-9._~-]" << std::endl;
+                    std::wsmatch wm2;
+                    std::wregex wr2( L"[a-zA-Z0-9._~-]+" );
+                    result2 = regex_match( wm[2].str(), wm2, wr2 ); // result returns true
+                    if ( ! result2 ) {
+                        std::wcout << L"Url part: " << wm[2] << std::endl;
+                    } else {
+                        std::wcout << L"Url part: " << wm[4] << std::endl;
+                    }
+                }
+
+                return 3;
+            }
+        }
 
         if ( options[REV].count() > 0 ) {
             rev = std::string( options[REV].last()->arg );
