@@ -310,16 +310,10 @@ int main( int argc, char * argv[]) {
         }
         std::vector<int> selectors;
 
-        std::cout << "Protocol: " << protocol << std::endl;
-        std::cout << "User:     " << user << std::endl;
-        std::cout << "Site:     " << site << std::endl;
-        std::cout << "Port:     " << port << std::endl;
-        std::cout << "Repo:     " << upath << std::endl;
-        std::cout << "Revision: " << rev << std::endl;
-        std::cout << "File:     " << file << std::endl;
+        PresentData( protocol, user, site, port, upath, rev, file );
 
         std::wstring gcode = build_gcode( protocol, user, site, port, upath, rev, file, selectors );
-        std::wcout << gcode << std::endl;
+        std::wcout << std::endl << L"gitu://" << gcode << std::endl;
     } else {
         std::wstring gcode( strlen( options[DECODE].last()->arg ), L' ');
         gcode.resize( std::mbstowcs( &gcode[0], options[DECODE].last()->arg, strlen( options[DECODE].last()->arg ) ) );
@@ -337,10 +331,8 @@ int main( int argc, char * argv[]) {
             if ( decoded[ "site" ].size() == 0 ) {
                 decoded[ "site" ] = decoded[ "site_inline" ];
             }
-            std::cout << "Site: " << decoded["site"] << std::endl;
-            std::cout << "Repo: " << decoded["repo"] << std::endl;
-            std::cout << "Rev: " << decoded["rev"] << std::endl;
-            std::cout << "File: " << decoded["file"] << std::endl;
+
+            PresentData( decoded["proto"], decoded["user"], decoded["site"], decoded["port"], decoded["repo"], decoded["rev"], decoded["file"] );
         }
     }
     return 0;

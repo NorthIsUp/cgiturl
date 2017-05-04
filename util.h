@@ -42,4 +42,13 @@ static inline std::string trimmed( std::string s ) {
 
 bool errorOnDisallowedChars( const std::string & type, const std::string & invalidChars );
 
+void PresentData(
+        std::string & protocol,
+        std::string & user,
+        std::string & site,
+        std::string & port,
+        std::string & repo,
+        std::string & rev,
+        std::string & file
+);
 #endif
