@@ -111,7 +111,7 @@ int main( int argc, char * argv[]) {
         //
 
         std::smatch m;
-        std::regex r( "(git|http|https|ftp|ftps)://([a-zA-Z0-9._~-]+)(:[0-9]+)?/([a-zA-Z0-9./_~:-]+)" );
+        std::regex r( "^(git|http|https|ftp|ftps)://([a-zA-Z0-9._~-]+)(:[0-9]+)?/([a-zA-Z0-9./_~:-]+)$" );
         result = regex_match( arg, m, r );
         if ( result ) {
             protocol=m[1]; site=m[2]; upath=m[4];
@@ -121,7 +121,7 @@ int main( int argc, char * argv[]) {
         }
 
         if ( ! result ) {
-            r = std::regex( "rsync://([a-zA-Z0-9._~-]+)/([a-zA-Z0-9./_~:-]+)" );
+            r = std::regex( "^rsync://([a-zA-Z0-9._~-]+)/([a-zA-Z0-9./_~:-]+)$" );
             m = std::smatch();
             result = regex_match( arg, m, r );
             if ( result ) {
@@ -130,7 +130,7 @@ int main( int argc, char * argv[]) {
         }
 
         if ( ! result ) {
-            r = std::regex( "ssh://([a-zA-Z0-9._~-]+@)?([a-zA-Z0-9._~-]+)(:[0-9]+)?/([a-zA-Z0-9./_~:-]+)" );
+            r = std::regex( "^ssh://([a-zA-Z0-9._~-]+@)?([a-zA-Z0-9._~-]+)(:[0-9]+)?/([a-zA-Z0-9./_~:-]+)$" );
             m = std::smatch();
             result = regex_match( arg, m, r );
             if ( result ) {
@@ -145,7 +145,7 @@ int main( int argc, char * argv[]) {
         }
 
         if ( ! result ) {
-            r = std::regex( "([a-zA-Z0-9._~-]+@)?([a-zA-Z0-9._~-]+):([a-zA-Z0-9./_~:-]?[a-zA-Z0-9._~:-][a-zA-Z0-9./_~:-]*)" );
+            r = std::regex( "^([a-zA-Z0-9._~-]+@)?([a-zA-Z0-9._~-]+):([a-zA-Z0-9./_~:-]?[a-zA-Z0-9._~:-][a-zA-Z0-9./_~:-]*)$" );
             m = std::smatch();
             result = regex_match( arg, m, r );
             if ( result ) {
@@ -161,7 +161,7 @@ int main( int argc, char * argv[]) {
         //
 
         std::wsmatch wm;
-        std::wregex wr( L"(git|http|https|ftp|ftps)://([^/:]+)(:[^/]+)?/(.+)" );
+        std::wregex wr( L"^(git|http|https|ftp|ftps)://([^/:]+)(:[^/]+)?/(.+)$" );
 
         if ( ! result ) {
             result = regex_match( warg, wm, wr );
@@ -194,7 +194,7 @@ int main( int argc, char * argv[]) {
 
         if ( ! result ) {
             wm = std::wsmatch();
-            wr = std::wregex( L"ssh://([^@/]+@)?([^/:]+)(:[^/]+)?/(.*)" );
+            wr = std::wregex( L"^ssh://([^@/]+@)?([^/:]+)(:[^/]+)?/(.*)$" );
             result = regex_match( warg, wm, wr );
             if ( result ) {
                 bool result2 = true;
