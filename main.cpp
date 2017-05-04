@@ -253,6 +253,19 @@ int main( int argc, char * argv[]) {
             }
         }
 
+        if ( ! result ) {
+            std::wregex proto_r(L"^(rsync|git|http|https|ftp|ftps|ssh)://.*$");
+            if ( !std::regex_search( warg, proto_r ) ) {
+                wm = std::wsmatch();
+                wr = std::wregex( L"^([^/:]+)://.*$" );
+                result = regex_match( warg, wm, wr );
+                if ( result ) {
+                    std::wcout << L"Unsupported protocol: " << wm[1] << std::endl;
+                    return 6;
+                }
+            }
+        }
+
         if ( options[REV].count() > 0 ) {
             rev = std::string( options[REV].last()->arg );
         }
