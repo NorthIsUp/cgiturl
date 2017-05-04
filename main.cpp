@@ -192,6 +192,49 @@ int main( int argc, char * argv[]) {
             }
         }
 
+        if ( ! result ) {
+            wm = std::wsmatch();
+            wr = std::wregex( L"ssh://([^@/]+@)?([^/:]+)(:[^/]+)?/(.*)" );
+            result = regex_match( warg, wm, wr );
+            if ( result ) {
+                bool result2 = true;
+
+                if ( wm[1].str().size() > 0 ) {
+                    std::wsmatch wm2;
+                    std::wregex wr2( L"^[a-zA-Z0-9._~-]+@$" );
+                    result2 = regex_match( wm[1].str(), wm2, wr2 );
+                    if ( ! result2 ) {
+                        std::cout << "Forbidden characters used in user name, allowed are [a-zA-Z0-9._~-]" << std::endl;
+                        std::wcout << L"Obtained user name: " << wm[1].str().substr( 0, wm[1].str().size() - 1 ) << std::endl;
+                    }
+                }
+
+                if ( result2 && wm[3].str().size() > 0 ) {
+                    std::wsmatch wm2;
+                    std::wregex wr2( L"^:[0-9]+$" );
+                    result2 = regex_match( wm[3].str(), wm2, wr2 );
+                    if ( ! result2 ) {
+                        std::wcout << L"Incorrect port number: " << wm[3].str().substr( 1, std::string::npos ) << std::endl;
+                    }
+                }
+
+                if ( result2 ) {
+                    std::cout << "Forbidden characters used in URL, allowed are [a-zA-Z0-9._~-]" << std::endl;
+                    std::wsmatch wm2;
+                    std::wregex wr2( L"^[a-zA-Z0-9._~-]+$" );
+                    result2 = regex_match( wm[2].str(), wm2, wr2 );
+                    if ( ! result2 ) {
+                        std::wcout << L"Url part: " << wm[2] << std::endl;
+                    } else {
+                        std::wcout << L"Url part: " << wm[4] << std::endl;
+                    }
+                }
+
+                return 4;
+            }
+        }
+
+
         if ( options[REV].count() > 0 ) {
             rev = std::string( options[REV].last()->arg );
         }
