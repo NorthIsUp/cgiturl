@@ -310,7 +310,7 @@ std::tuple<int, std::string> BitsProtoSitePort( std::vector<int> & dest, const s
             skip = true;
 
         if ( ! skip ) {
-            std::tie( newerror, newInvalidChars ) = BitsWithPreamble( dest, "site", site_lt );
+            std::tie( newerror, newInvalidChars ) = BitsWithPreamble( dest, "site_flags", site_lt );
             invalidChars += newInvalidChars;
             error += newerror;
         }
