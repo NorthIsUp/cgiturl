@@ -234,6 +234,24 @@ int main( int argc, char * argv[]) {
             }
         }
 
+        if ( ! result ) {
+            wm = std::wsmatch();
+            wr = std::wregex( L"^rsync://([^/]+)/(.*)$" );
+            result = regex_match( warg, wm, wr );
+            if ( result ) {
+                std::cout << "Forbidden characters used in URL, allowed are [a-zA-Z0-9._~-]" << std::endl;
+                std::wsmatch wm2;
+                std::wregex wr2( L"^[a-zA-Z0-9._~-]+$" );
+                bool result2 = regex_match( wm[1].str(), wm2, wr2 );
+                if ( ! result2 ) {
+                    std::wcout << L"Url part: " << wm[1] << std::endl;
+                } else {
+                    std::wcout << L"Url part: " << wm[2] << std::endl;
+                }
+
+                return 5;
+            }
+        }
 
         if ( options[REV].count() > 0 ) {
             rev = std::string( options[REV].last()->arg );
