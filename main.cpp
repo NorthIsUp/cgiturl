@@ -112,7 +112,7 @@ int main( int argc, char * argv[]) {
 
         std::smatch m;
         std::regex r( "(git|http|https|ftp|ftps)://([a-zA-Z0-9._~-]+)(:[0-9]+)?/([a-zA-Z0-9./_~:-]+)" );
-        result = regex_match( arg, m, r ); // result returns true
+        result = regex_match( arg, m, r );
         if ( result ) {
             protocol=m[1]; site=m[2]; upath=m[4];
             if ( m[3].str().size() > 0 ) {
@@ -123,7 +123,7 @@ int main( int argc, char * argv[]) {
         if ( ! result ) {
             r = std::regex( "rsync://([a-zA-Z0-9._~-]+)/([a-zA-Z0-9./_~:-]+)" );
             m = std::smatch();
-            result = regex_match( arg, m, r ); // result returns true
+            result = regex_match( arg, m, r );
             if ( result ) {
                 protocol="rsync"; site=m[1]; upath=m[2];
             }
@@ -132,7 +132,7 @@ int main( int argc, char * argv[]) {
         if ( ! result ) {
             r = std::regex( "ssh://([a-zA-Z0-9._~-]+@)?([a-zA-Z0-9._~-]+)(:[0-9]+)?/([a-zA-Z0-9./_~:-]+)" );
             m = std::smatch();
-            result = regex_match( arg, m, r ); // result returns true
+            result = regex_match( arg, m, r );
             if ( result ) {
                 protocol="ssh"; site=m[2]; upath=m[4];
                 if ( m[1].str().size() > 0 ) {
@@ -147,7 +147,7 @@ int main( int argc, char * argv[]) {
         if ( ! result ) {
             r = std::regex( "([a-zA-Z0-9._~-]+@)?([a-zA-Z0-9._~-]+):([a-zA-Z0-9./_~:-]?[a-zA-Z0-9._~:-][a-zA-Z0-9./_~:-]*)" );
             m = std::smatch();
-            result = regex_match( arg, m, r ); // result returns true
+            result = regex_match( arg, m, r );
             if ( result ) {
                 protocol="ssh"; site=m[2]; upath=m[3];
                 if ( m[1].str().size() > 0 ) {
@@ -164,13 +164,13 @@ int main( int argc, char * argv[]) {
         std::wregex wr( L"(git|http|https|ftp|ftps)://([^/:]+)(:[^/]+)?/(.+)" );
 
         if ( ! result ) {
-            result = regex_match( warg, wm, wr ); // result returns true
+            result = regex_match( warg, wm, wr );
             if ( result ) {
                 bool result2 = true;
                 if ( wm[3].str().size() > 0 ) {
                     std::wsmatch wm2;
                     std::wregex wr2( L"^:[0-9]+$" );
-                    result2 = regex_match( wm[3].str(), wm2, wr2 ); // result returns true
+                    result2 = regex_match( wm[3].str(), wm2, wr2 );
                     if ( ! result2 ) {
                         std::wcout << L"Incorrect port number: " << wm[3].str().substr( 1, std::string::npos ) << std::endl;
                     }
@@ -180,7 +180,7 @@ int main( int argc, char * argv[]) {
                     std::cout << "Forbidden characters used in URL, allowed are [a-zA-Z0-9._~-]" << std::endl;
                     std::wsmatch wm2;
                     std::wregex wr2( L"[a-zA-Z0-9._~-]+" );
-                    result2 = regex_match( wm[2].str(), wm2, wr2 ); // result returns true
+                    result2 = regex_match( wm[2].str(), wm2, wr2 );
                     if ( ! result2 ) {
                         std::wcout << L"Url part: " << wm[2] << std::endl;
                     } else {
