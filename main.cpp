@@ -113,31 +113,47 @@ int main( int argc, char * argv[]) {
         std::smatch m;
         std::regex r( "(git|http|https|ftp|ftps)://([a-zA-Z0-9._~-]+)(:[0-9]+)?/([a-zA-Z0-9./_~:-]+)" );
         result = regex_match( arg, m, r ); // result returns true
-        if ( result )
-            protocol=m[1]; site=m[2]; port=m[3]; upath=m[4];
+        if ( result ) {
+            protocol=m[1]; site=m[2]; upath=m[4];
+            if ( m[3].str().size() > 0 ) {
+                port = m[3].str().substr( 1, std::string::npos );
+            }
+        }
 
         if ( ! result ) {
             r = std::regex( "rsync://([a-zA-Z0-9._~-]+)/([a-zA-Z0-9./_~:-]+)" );
             m = std::smatch();
             result = regex_match( arg, m, r ); // result returns true
-            if ( result )
+            if ( result ) {
                 protocol="rsync"; site=m[1]; upath=m[2];
+            }
         }
 
         if ( ! result ) {
             r = std::regex( "ssh://([a-zA-Z0-9._~-]+@)?([a-zA-Z0-9._~-]+)(:[0-9]+)?/([a-zA-Z0-9./_~:-]+)" );
             m = std::smatch();
             result = regex_match( arg, m, r ); // result returns true
-            if ( result )
-                protocol="ssh"; user=m[1]; site=m[2]; port=m[3]; upath=m[4];
+            if ( result ) {
+                protocol="ssh"; site=m[2]; upath=m[4];
+                if ( m[1].str().size() > 0 ) {
+                    user = m[1].str().substr( 0, m[1].str().size() - 1 );
+                }
+                if ( m[3].str().size() > 0 ) {
+                    port = m[3].str().substr( 1, std::string::npos );
+                }
+            }
         }
 
         if ( ! result ) {
             r = std::regex( "([a-zA-Z0-9._~-]+@)?([a-zA-Z0-9._~-]+):([a-zA-Z0-9./_~:-]?[a-zA-Z0-9._~:-][a-zA-Z0-9./_~:-]*)" );
             m = std::smatch();
             result = regex_match( arg, m, r ); // result returns true
-            if ( result )
-                protocol="ssh"; user=m[1]; site=m[2]; upath=m[3];
+            if ( result ) {
+                protocol="ssh"; site=m[2]; upath=m[3];
+                if ( m[1].str().size() > 0 ) {
+                    user = m[1].str().substr( 0, m[1].str().size() - 1 );
+                }
+            }
         }
 
         //
