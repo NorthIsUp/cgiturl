@@ -318,6 +318,21 @@ int main( int argc, char * argv[]) {
         std::wstring gcode( strlen( options[DECODE].last()->arg ), L' ');
         gcode.resize( std::mbstowcs( &gcode[0], options[DECODE].last()->arg, strlen( options[DECODE].last()->arg ) ) );
 
+        std::wsmatch wm;
+        std::wregex wr( L"^gitu://(.*)$" );
+
+        bool result = regex_match( gcode, wm, wr );
+        if ( result ) {
+            gcode = std::wstring( wm[1] );
+        } else {
+            wm = std::wsmatch();
+            wr = std::wregex( L"^//(.*)$" );
+            result = regex_match( gcode, wm, wr );
+            if ( result ) {
+                gcode = std::wstring( wm[1] );
+            }
+        }
+
         std::vector<int> bits;
         int error;
         tie( bits, error ) = decode_zcode( gcode );
