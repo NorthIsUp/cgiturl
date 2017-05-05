@@ -263,6 +263,21 @@ std::tuple<int, std::string> BitsWithPreamble( std::vector<int> & dest, const st
     return std::make_tuple( error, invalidChars );
 }
 
+std::tuple<int, std::string> BitsWithoutPreamble( std::vector<int> & dest, const std::string & data ) {
+    std::string invalidChars;
+    int error;
+    std::vector<int> bits;
+    std::tie( bits, error, invalidChars ) = BitsForString( data );
+    if( error ) {
+        error += 1630000;
+    }
+
+    // Data
+    dest.insert( dest.end(), bits.begin(), bits.end() );
+
+    return std::make_tuple( error, invalidChars );
+}
+
 std::tuple<int, std::string> BitsProtoSitePort( std::vector<int> & dest, const std::string & proto, std::string server, const std::string & port ) {
     int error = 0;
     int newerror;
