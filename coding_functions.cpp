@@ -627,6 +627,11 @@ std::wstring build_gcode(
     // Meta-data start
     error += BitsStart( appendix );
 
+    // Site
+    std::tie( newerror, invalidChars ) = BitsProtoSitePort( appendix, protocol, site, port );
+    error += newerror;
+    errorOnDisallowedChars( "site", invalidChars );
+
     // Revision
     std::tie( newerror, invalidChars ) = BitsWithPreamble( appendix, "rev",  rev );
     error += newerror;
@@ -641,11 +646,6 @@ std::wstring build_gcode(
     std::tie( newerror, invalidChars ) = BitsWithPreamble( appendix, "repo", repo );
     error += newerror;
     errorOnDisallowedChars( "repo", invalidChars );
-
-    // Site
-    std::tie( newerror, invalidChars ) = BitsProtoSitePort( appendix, protocol, site, port );
-    error += newerror;
-    errorOnDisallowedChars( "site", invalidChars );
 
     // Meta-data end
     error += BitsStop( appendix );
