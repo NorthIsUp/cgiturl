@@ -283,6 +283,11 @@ std::tuple<int, std::string> BitsProtoSitePort( std::vector<int> & dest, const s
     int newerror;
     std::string invalidChars, newInvalidChars;
 
+    // Preamble - always exists, because there is always the protocol encoded
+    std::tie( newerror, newInvalidChars ) = BitsWithPreamble( dest, "site_flags", "", true );
+    invalidChars += newInvalidChars;
+    error += newerror;
+
     //
     // Port
     //
@@ -306,12 +311,7 @@ std::tuple<int, std::string> BitsProtoSitePort( std::vector<int> & dest, const s
     }
 
     if ( skip ) {
-        // To repeat site_flags preamble indicating inline-site
-        std::tie( newerror, newInvalidChars ) = BitsWithPreamble( dest, "site_flags", "", true );
-        invalidChars += newInvalidChars;
-        error += newerror;
-
-        // Following inline server, with the repeating preamble
+        // Inline server, with the repeating preamble
         std::tie( newerror, newInvalidChars ) = BitsWithPreamble( dest, "site_flags", server );
         invalidChars += newInvalidChars;
         error += newerror;
@@ -325,7 +325,7 @@ std::tuple<int, std::string> BitsProtoSitePort( std::vector<int> & dest, const s
             skip = true;
 
         if ( ! skip ) {
-            std::tie( newerror, newInvalidChars ) = BitsWithPreamble( dest, "site_flags", site_lt );
+            std::tie( newerror, newInvalidChars ) = BitsWithoutPreamble( dest, site_lt );
             invalidChars += newInvalidChars;
             error += newerror;
         }
