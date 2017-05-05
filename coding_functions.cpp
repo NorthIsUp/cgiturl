@@ -25,6 +25,7 @@
 #include <map>
 #include <list>
 #include <regex>
+#include <bitset>
 
 const char input_characters[67]={ '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h',
                       'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
@@ -136,16 +137,13 @@ process_meta_data( const std::vector<int> & _bits ) {
                     inlne = 0;
                     current_selector = "site_flags";
 
-#if 0
-                    // Short path for port number - conditional constant 16 bits
-                    if [[ "${strbits[1]}" = "1" ]]; then
-                        local port_bits="${strbits[2,17]}"
-                        decoded[port]=$(( [#10] 2#$port_bits ))
-                        strbits="${strbits[18,-1]}"
-                    else
-                        strbits="${strbits[2,-1]}"
-                    fi
-#endif
+                    if ( strbits[0] == '1' ) {
+                        std::bitset<16> bin_port( strbits.substr( 1, 16 ) );
+                        decoded["port"] = std::to_string( bin_port.to_ulong() );
+                        strbits = strbits.substr( 17, std::string::npos );
+                    } else {
+                        strbits = strbits.substr( 1, std::string::npos );
+                    }
 
 #if 0
                     # Short path for protocol - always 3 bits
@@ -291,6 +289,20 @@ std::tuple<int, std::string> BitsProtoSitePort( std::vector<int> & dest, const s
     //
     // Port
     //
+
+    std::vector<int> bits;
+    if ( port.size() > 0 ) {
+        bits.push_back( 1 );
+
+        std::bitset< 16 > bin_port( std::stoi( port ) );
+        for ( int i = 15; i >= 0; i -- )
+            bits.push_back( bin_port[ i ] );
+
+        dest.insert( dest.end(), bits.begin(), bits.end() );
+    } else {
+        bits.push_back( 0 );
+        dest.insert( dest.end(), bits.begin(), bits.end() );
+    }
 
     //
     // Protocol
