@@ -100,26 +100,32 @@ process_meta_data( const std::vector<int> & _bits ) {
 
         // keys of the 'decoded' hash
         std::string current_selector = "error";
+        bool first = true;
         int trylen;
         std::string mat, trystr;
         while ( 1 ) {
-            mat="";
-            for ( trylen = 6; trylen <= 7; trylen ++ ) {
-                // Take substring of len $trylen and check if
-                // it matches any Huffman code
-                trystr = strbits.substr( 0, trylen );
-                if( rcodes.count( trystr ) ) {
-                    mat = rcodes[ trystr ];
-                    break;
+            if ( first ) {
+                mat = "site_flags";
+                first = false;
+            } else {
+                mat="";
+                for ( trylen = 6; trylen <= 7; trylen ++ ) {
+                    // Take substring of len $trylen and check if
+                    // it matches any Huffman code
+                    trystr = strbits.substr( 0, trylen );
+                    if( rcodes.count( trystr ) ) {
+                        mat = rcodes[ trystr ];
+                        break;
+                    }
                 }
-            }
 
-            if( mat == "" ) {
-                return std::make_tuple( 0, decoded, 121 );
-            }
+                if( mat == "" ) {
+                    return std::make_tuple( 0, decoded, 121 );
+                }
 
-            // Skip decoded bits
-            strbits = strbits.substr( trylen, std::string::npos );
+                // Skip decoded bits
+                strbits = strbits.substr( trylen, std::string::npos );
+            }
 
             // Handle what has been matched, either selector or data
             if ( mat == "ss" ) {
@@ -282,10 +288,7 @@ std::tuple<int, std::string> BitsProtoSitePort( std::vector<int> & dest, const s
     int newerror;
     std::string invalidChars, newInvalidChars;
 
-    // Preamble - always exists, because there is always the protocol encoded
-    std::tie( newerror, newInvalidChars ) = BitsWithPreamble( dest, "site_flags", "", true );
-    invalidChars += newInvalidChars;
-    error += newerror;
+    // No preamble - protocol-etc. it is the default data section
 
     //
     // Port
