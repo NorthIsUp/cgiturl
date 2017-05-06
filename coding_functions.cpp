@@ -43,6 +43,8 @@ std::map<std::string, std::string> rsites_flags;
 std::map<std::string, std::string> names;
 std::map<std::string, std::string> server_site;
 std::map<std::string, std::string> rserver_site;
+std::map<std::string, std::string> proto_code;
+std::map<std::string, std::string> rproto_code;
 
 std::tuple< int, std::map< std::string, std::string >, int >
 process_meta_data( const std::vector<int> & _bits ) {
@@ -137,6 +139,7 @@ process_meta_data( const std::vector<int> & _bits ) {
                     inlne = 0;
                     current_selector = "site_flags";
 
+                    // Short path for port number - conditional constant 16 bits
                     if ( strbits[0] == '1' ) {
                         std::bitset<16> bin_port( strbits.substr( 1, 16 ) );
                         decoded["port"] = std::to_string( bin_port.to_ulong() );
@@ -145,12 +148,10 @@ process_meta_data( const std::vector<int> & _bits ) {
                         strbits = strbits.substr( 1, std::string::npos );
                     }
 
-#if 0
-                    # Short path for protocol - always 3 bits
-                    local proto_bits="${strbits[1,3]}"
-                    decoded[proto]="${rproto_code[$proto_bits]}"
-                    strbits="${strbits[4,-1]}"
-#endif
+                    // Short path for protocol - always 3 bits
+                    std::string proto_bits = strbits.substr( 0, 3 );
+                    decoded[ "proto" ] = rproto_code[ proto_bits ];
+                    strbits = strbits.substr( 3, std::string::npos );
                 }
             } else if ( decoded.count( mat ) ) {
                 inlne = 0;
@@ -307,6 +308,11 @@ std::tuple<int, std::string> BitsProtoSitePort( std::vector<int> & dest, const s
     //
     // Protocol
     //
+
+    std::string proto_bits = proto_code[ proto ];
+    if ( proto_bits.size() != 3 )
+        proto_bits = "111";
+    error += insertBitsFromStrBits( dest, proto_bits );
 
     //
     // Site
@@ -710,7 +716,7 @@ void create_sites_maps() {
 }
 
 void create_helper_maps() {
-    names["rev"] = "revision";
+    names["rev"]  = "revision";
     names["file"] = "file name";
     names["repo"] = "user/repo";
     names["site"] = "site";
@@ -724,6 +730,24 @@ void create_server_maps() {
     rserver_site["gh"] = "github.com";
     rserver_site["bb"] = "bitbucket.org";
     rserver_site["gl"] = "gitlab.com";
+}
+
+void create_protocol_maps() {
+    proto_code["ssh"]   = "000";
+    proto_code["git"]   = "001";
+    proto_code["http"]  = "010";
+    proto_code["https"] = "011";
+    proto_code["ftp"]   = "100";
+    proto_code["ftps"]  = "101";
+    proto_code["rsync"] = "110";
+
+    rproto_code["000"] =    "ssh";
+    rproto_code["001"] =    "git";
+    rproto_code["010"] =    "http";
+    rproto_code["011"] =    "https";
+    rproto_code["100"] =    "ftp";
+    rproto_code["101"] =    "ftps";
+    rproto_code["110"] =    "rsync";
 }
 
 std::map< std::string, std::string > & getCodes() { return codes; }

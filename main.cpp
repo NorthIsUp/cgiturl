@@ -69,6 +69,7 @@ int main( int argc, char * argv[]) {
     create_sites_maps();
     create_helper_maps();
     create_server_maps();
+    create_protocol_maps();
 
     argc -= ( argc>0 ); argv += ( argc>0 ); // skip program name argv[0] if present
     option::Stats  stats( usage, argc, argv );

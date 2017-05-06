@@ -28,6 +28,7 @@ void create_rcodes_map();
 void create_sites_maps();
 void create_helper_maps();
 void create_server_maps();
+void create_protocol_maps();
 
 std::map< std::string, std::string > & getCodes();
 std::map< std::string, std::string > & getRCodes();
