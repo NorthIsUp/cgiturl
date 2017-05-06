@@ -1,7 +1,6 @@
 #include "math_functions.h"
 #include "coding_functions.h"
 #include "util.h"
-#include "optionparser.h"
 
 #include <vector>
 #include <map>
@@ -9,6 +8,8 @@
 #include <iostream>
 #include <locale>
 #include <regex>
+
+#include "optionparser.h"
 
 struct Arg: public option::Arg
 {
@@ -76,9 +77,9 @@ int main( int argc, char * argv[]) {
 
     argc -= ( argc>0 ); argv += ( argc>0 ); // skip program name argv[0] if present
     option::Stats  stats( usage, argc, argv );
-    std::vector<option::Option> options( stats.options_max );
-    std::vector<option::Option> buffer( stats.buffer_max );
-    option::Parser parse( true, usage, argc, argv, &options[0], &buffer[0] );
+    std::vector<option::Option> options( stats.options_max + 1 );
+    std::vector<option::Option> buffer( 128 );
+    option::Parser parse( true, usage, argc, argv, &options[0], &buffer[0], 0, false, 127 );
 
     if ( parse.error() ) {
         fprintf( stderr, "Error when parsing options, aborting\n" );
