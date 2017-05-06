@@ -50,6 +50,13 @@ std::tuple< int, std::map< std::string, std::string >, int >
 process_meta_data( const std::vector<int> & _bits ) {
     int size = _bits.size();
     std::vector<int> bits = _bits;
+
+    // Pop two version bits
+    int ver2 = bits.back();
+    bits.pop_back();
+    int ver1 = bits.back();
+    bits.pop_back();
+
     std::reverse( bits.begin(), bits.end() );
 
     std::stringstream ss;
@@ -458,11 +465,8 @@ std::wstring build_gcode(
 {
     std::vector<int> bits;
 
-    // Version
-    bits.push_back( 0 );
-    bits.push_back( 0 );
-
     bits.insert( bits.end(), selectors.begin(), selectors.end() );
+    // Reverse, so that trailing zeros are eradicated from gcode
     std::reverse( bits.begin(), bits.end() );
 
     std::vector<int> appendix;
@@ -526,6 +530,10 @@ std::wstring build_gcode(
         std::reverse( appendix.begin(), appendix.end() );
         bits.insert( bits.end(), appendix.begin(), appendix.end() );
     }
+
+    // Version
+    bits.push_back( 0 );
+    bits.push_back( 0 );
 
     // std::copy( bits.begin(), bits.end(), std::ostream_iterator<int>(std::cout,""));
     // std::cout << std::endl;
