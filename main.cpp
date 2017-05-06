@@ -314,10 +314,11 @@ int main( int argc, char * argv[]) {
         }
         std::vector<int> selectors;
 
+        std::cout << std::endl;
         PresentData( protocol, user, site, port, upath, rev, file );
 
         std::wstring gcode = build_gcode( protocol, user, site, port, upath, rev, file, selectors );
-        std::cout << std::endl << "gitu://" << wide_to_narrow( &gcode[0], gcode.size() ) << std::endl;
+        std::cout << std::endl << MAGENTA << "gitu://" << wide_to_narrow( &gcode[0], gcode.size() ) << RESET << std::endl;
     } else {
         std::wstring gcode( std::strlen( options[DECODE].last()->arg ), L' ' );
         gcode.resize( std::mbstowcs( &gcode[0], options[DECODE].last()->arg, std::strlen( options[DECODE].last()->arg ) ) );
