@@ -472,7 +472,7 @@ std::wstring build_gcode(
     // Site
     std::tie( newerror, invalidChars ) = BitsProtoSitePort( appendix, protocol, site, port );
     error += newerror;
-    errorOnDisallowedChars( "site", invalidChars );
+    errorOnDisallowedChars( "protocol-site-port", invalidChars );
 
     // Repo is ensured to be always appended, even if somehow empty (should not happen)
     std::tie( newerror, invalidChars ) = BitsWithPreamble( appendix, "repo_rev_usr", repo, true );
