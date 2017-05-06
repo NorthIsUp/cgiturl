@@ -517,14 +517,14 @@ std::wstring build_gcode(
     }
 
     // Create Zcode
-    std::vector<wchar_t> zcode;
+    std::vector<wchar_t> gcode;
     std::vector<int> numbers;
     int error2;
-    std::tie( zcode, numbers, error2 ) = encode_zcode_arr01( bits );
+    std::tie( gcode, numbers, error2 ) = encode_gcode_arr01( bits );
     error += error2;
 
     // Convert Zcode to QString
-    std::wstring zcode2( zcode.begin(), zcode.end() );
+    std::wstring gcode2( gcode.begin(), gcode.end() );
 
     if( error ) {
         int exam = error - 1630000;
@@ -537,7 +537,7 @@ std::wstring build_gcode(
 
         return std::wstring();
     } else {
-        return zcode2;
+        return gcode2;
     }
 }
 

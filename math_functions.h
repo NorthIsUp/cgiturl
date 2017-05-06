@@ -26,13 +26,13 @@ std::tuple< std::vector<int>, int> letters_to_numbers( const std::vector<wchar_t
 std::tuple< std::vector<int>, int> letters_to_numbers( const std::string & letters );
 std::tuple< std::vector<wchar_t>, int, int > div2( const std::vector<wchar_t> & letters );
 std::tuple< std::wstring, int, int > div2( const std::wstring & letters );
-std::tuple< std::vector<int>, int > decode_zcode( const std::wstring & code );
+std::tuple< std::vector<int>, int > decode_gcode( const std::wstring & code );
 std::tuple<int, int> get_integer_from_base_1024( const std::string & letters );
 std::tuple< std::vector<int>, int > arr_01_to_24_bit_pack_numbers( const std::vector<int> & bits );
 std::tuple< std::vector<int>, int > str_01_to_24_bit_pack_numbers( const std::string & sbits );
 std::tuple< std::vector<int>, int, int > div_24_bit_pack_numbers_1024( const std::vector<int> & numbers );
-std::tuple< std::vector<wchar_t>, std::vector<int>, int > encode_zcode_24_bit_pack_numbers( const std::vector<int> & numbers );
-std::tuple< std::vector<wchar_t>, std::vector<int>, int > encode_zcode_str01( const std::string & sbits );
-std::tuple< std::vector<wchar_t>, std::vector<int>, int > encode_zcode_arr01( const std::vector<int> & bits );
+std::tuple< std::vector<wchar_t>, std::vector<int>, int > encode_gcode_24_bit_pack_numbers( const std::vector<int> & numbers );
+std::tuple< std::vector<wchar_t>, std::vector<int>, int > encode_gcode_str01( const std::string & sbits );
+std::tuple< std::vector<wchar_t>, std::vector<int>, int > encode_gcode_arr01( const std::vector<int> & bits );
 
 #endif // MATH_FUNCTIONS_H

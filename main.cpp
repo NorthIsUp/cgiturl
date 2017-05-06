@@ -340,7 +340,7 @@ int main( int argc, char * argv[]) {
 
         std::vector<int> bits;
         int error;
-        tie( bits, error ) = decode_zcode( gcode );
+        tie( bits, error ) = decode_gcode( gcode );
         if( error != 0 ) {
             std::cout << "Error during decoding the entered Zcode: " << error << std::endl;
         } else {

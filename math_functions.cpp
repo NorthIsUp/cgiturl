@@ -183,10 +183,10 @@ std::tuple< std::vector<int>, int> letters_to_numbers( const std::wstring & lett
     return letters_to_numbers( letters2 );
 }
 
-// FUNCTION: decode_zcode {{{
+// FUNCTION: decode_gcode {{{
 // Takes zekyl code, i.e. 1/someletters
 // and decodes it to sequence of bits
-std::tuple< std::vector<int>, int > decode_zcode( const std::wstring & letters ) {
+std::tuple< std::vector<int>, int > decode_gcode( const std::wstring & letters ) {
     std::vector<int> bits;
     std::wstring workingvar = letters;
     std::wregex rx(L"^0*$");
@@ -210,7 +210,7 @@ std::tuple< std::vector<int>, int > decode_zcode( const std::wstring & letters )
 // Converts given base-1024 string into integer
 // Warning: it tagets integer (signed), so
 // the size of number is limited here (while
-// decode_zcode generates series of bits of
+// decode_gcode generates series of bits of
 // arbitrary length)
 std::tuple<int, int> get_integer_from_base_1024( const std::wstring & letters ) {
     std::vector<int> bits;
@@ -242,10 +242,10 @@ std::tuple<int, int> get_integer_from_base_1024( const std::wstring & letters ) 
 }
 // }}}
 
-// FUNCTION: encode_zcode_str01 {{{
+// FUNCTION: encode_gcode_str01 {{{
 // Takes string of 0 and 1 that mark which zekylls are active
 // and encodes it to base-1024 number
-std::tuple< std::vector<wchar_t>, std::vector<int>, int > encode_zcode_str01( const std::string & sbits ) {
+std::tuple< std::vector<wchar_t>, std::vector<int>, int > encode_gcode_str01( const std::string & sbits ) {
     std::vector<int> numbers;
     int error;
     std::tie( numbers, error ) = str_01_to_24_bit_pack_numbers( sbits );
@@ -254,7 +254,7 @@ std::tuple< std::vector<wchar_t>, std::vector<int>, int > encode_zcode_str01( co
     }
 
     std::vector<wchar_t> code;
-    std::tie( code, numbers, error ) = encode_zcode_24_bit_pack_numbers( numbers );
+    std::tie( code, numbers, error ) = encode_gcode_24_bit_pack_numbers( numbers );
     if( error != 0 ) {
         return make_tuple( code, numbers, error + 3000 );
     }
@@ -263,10 +263,10 @@ std::tuple< std::vector<wchar_t>, std::vector<int>, int > encode_zcode_str01( co
 }
 // }}}
 
-// FUNCTION: encode_zcode_arr01 {{{
+// FUNCTION: encode_gcode_arr01 {{{
 // Takes array of 0 and 1 that mark which zekylls are
 // active and encodes it to base-1024 number
-std::tuple< std::vector<wchar_t>, std::vector<int>, int > encode_zcode_arr01( const std::vector<int> & bits ) {
+std::tuple< std::vector<wchar_t>, std::vector<int>, int > encode_gcode_arr01( const std::vector<int> & bits ) {
     std::vector<int> numbers;
     int error;
     std::tie( numbers, error ) = arr_01_to_24_bit_pack_numbers( bits );
@@ -275,7 +275,7 @@ std::tuple< std::vector<wchar_t>, std::vector<int>, int > encode_zcode_arr01( co
     }
 
     std::vector<wchar_t> code;
-    std::tie( code, numbers, error ) = encode_zcode_24_bit_pack_numbers( numbers );
+    std::tie( code, numbers, error ) = encode_gcode_24_bit_pack_numbers( numbers );
     if( error != 0 ) {
         return make_tuple( code, numbers, error + 9000 );
     }
@@ -283,10 +283,10 @@ std::tuple< std::vector<wchar_t>, std::vector<int>, int > encode_zcode_arr01( co
 }
 // }}}
 
-// FUNCTION: encode_zcode_24-bit_pack_numbers {{{
+// FUNCTION: encode_gcode_24-bit_pack_numbers {{{
 // Takes 24-bit pack numbers whose bits mark which zekylls are active
 // and encodes them to base-1024 number
-std::tuple< std::vector<wchar_t>, std::vector<int>, int > encode_zcode_24_bit_pack_numbers( const std::vector<int> & numbers ) {
+std::tuple< std::vector<wchar_t>, std::vector<int>, int > encode_gcode_24_bit_pack_numbers( const std::vector<int> & numbers ) {
     std::vector<int> nums_base1024, workingvar;
     workingvar = numbers;
 
@@ -327,8 +327,8 @@ std::tuple< std::vector<wchar_t>, std::vector<int>, int > encode_zcode_24_bit_pa
 // }}}
 
 // FUNCTION: div2 {{{
-// input - zcode's letters
-// Result – ( "zcode's letters after division" "remainder 0 or 1" )
+// input - gcode's letters
+// Result – ( "gcode's letters after division" "remainder 0 or 1" )
 std::tuple< std::vector<wchar_t>, int, int > div2( const std::vector<wchar_t> & letters ) {
     // First translate the letters to numbers and put them into array
     std::tuple< std::vector<int>, int > res = letters_to_numbers( letters );
