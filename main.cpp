@@ -43,7 +43,7 @@ struct Arg: public option::Arg
         return option::ARG_ILLEGAL;
     }
 };
- 
+
 
 enum  optionIndex { UNKNOWN, HELP, REV, PATH, DECODE };
 const option::Descriptor usage[] =
@@ -64,6 +64,9 @@ const option::Descriptor usage[] =
 };
 
 int main( int argc, char * argv[]) {
+    std::locale initial_locale;
+    std::locale::global ( std::locale ("") ); // use system environment to set locale
+
     create_codes_map();
     create_rcodes_map();
     create_sites_maps();
@@ -104,8 +107,8 @@ int main( int argc, char * argv[]) {
         std::string file;
         bool result;
         std::string arg( parse.nonOption(0) );
-        std::wstring warg( strlen( parse.nonOption(0) ), L' ' );
-        warg.resize( std::mbstowcs( &warg[0], parse.nonOption(0), strlen( parse.nonOption(0) ) ) );
+        std::wstring warg( std::strlen( parse.nonOption(0) ), L' ' );
+        warg.resize( std::mbstowcs( &warg[0], parse.nonOption(0), std::strlen( parse.nonOption(0) ) ) );
 
         //
         // Correct matches
@@ -314,10 +317,10 @@ int main( int argc, char * argv[]) {
         PresentData( protocol, user, site, port, upath, rev, file );
 
         std::wstring gcode = build_gcode( protocol, user, site, port, upath, rev, file, selectors );
-        std::wcout << std::endl << L"gitu://" << gcode << std::endl;
+        std::cout << std::endl << "gitu://" << wide_to_narrow( &gcode[0], gcode.size() ) << std::endl;
     } else {
-        std::wstring gcode( strlen( options[DECODE].last()->arg ), L' ');
-        gcode.resize( std::mbstowcs( &gcode[0], options[DECODE].last()->arg, strlen( options[DECODE].last()->arg ) ) );
+        std::wstring gcode( std::strlen( options[DECODE].last()->arg ), L' ' );
+        gcode.resize( std::mbstowcs( &gcode[0], options[DECODE].last()->arg, std::strlen( options[DECODE].last()->arg ) ) );
 
         std::wsmatch wm;
         std::wregex wr( L"^gitu://(.*)$" );

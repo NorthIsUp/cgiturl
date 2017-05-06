@@ -51,4 +51,8 @@ void PresentData(
         std::string & rev,
         std::string & file
 );
+
+const char* single_to_narrow( wchar_t inchar );
+
+const char* wide_to_narrow( wchar_t *input_buffer, int size );
 #endif

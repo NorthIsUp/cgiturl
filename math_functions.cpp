@@ -16,16 +16,20 @@
 */
 
 #include "math_functions.h"
+#include "util.h"
 #include <algorithm>
 #include <regex>
 #include <iostream>
+#include <cstdint>
 
 const wchar_t characters[1031]={
 // Latin-1
-'0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
-'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z',
-'A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z',
-                      
+L'0', L'1', L'2', L'3', L'4', L'5', L'6', L'7', L'8', L'9',
+L'a', L'b', L'c', L'd', L'e', L'f', L'g', L'h', L'i', L'j', L'k', L'l', L'm', L'n', L'o', L'p', L'q', L'r', L's',
+L't', L'u', L'v', L'w', L'x', L'y', L'z',
+L'A', L'B', L'C', L'D', L'E', L'F', L'G', L'H', L'I', L'J', L'K', L'L', L'M', L'N', L'O', L'P', L'Q', L'R', L'S',
+L'T', L'U', L'V', L'W', L'X', L'Y', L'Z',
+
 // Latin-1 Supplement [µºÀ-ÖØ-áãäæ-öøú-ÿ]
 L'µ', L'º', L'À', L'Á', L'Â', L'Ã', L'Ä', L'Å', L'Æ', L'Ç', L'È', L'É', L'Ê', L'Ë', L'Ì', L'Í', L'Î', L'Ï', L'Ð',
 L'Ñ', L'Ò', L'Ó', L'Ô', L'Õ', L'Ö', L'Ø', L'Ù', L'Ú', L'Û', L'Ü', L'Ý', L'Þ', L'ß', L'à', L'á', L'ã', L'ä', L'æ',
@@ -101,18 +105,18 @@ L'װ',
 const wchar_t *characters_begin = &characters[0];
 const wchar_t *characters_end = &characters[1024];
 
-// FUNCTION: convert_integer_to_base_36 {{{
-// Takes number, returns string [a-z0-9]+ that
-// is representation of the number in base 36
+// FUNCTION: convert_integer_to_base_1024 {{{
+// Takes number, returns string that is the representation
+// of the number in base-1024
 
-std::tuple< std::vector<wchar_t>, int > convert_integer_to_base_36(int number) {
+std::tuple< std::vector<wchar_t>, int > convert_integer_to_base_1024(int number) {
     std::vector<int> digits;
 
     int new_number = number;
     int remainder;
     while ( new_number != 0 ) {
-        remainder = new_number % 36;
-        new_number = new_number/36;
+        remainder = new_number % 1024;
+        new_number = new_number/1024;
 
         digits.push_back( remainder );
     }
@@ -138,7 +142,7 @@ std::tuple< std::vector<wchar_t>, int> numbers_to_letters(const std::vector<int>
     std::vector<wchar_t> REPLY;
     for( std::vector<int>::const_iterator it = digits.begin(); it != digits.end(); it ++ ) {
         int i = *it;
-        if ( i < 0 || i > 35 ) {
+        if ( i < 0 || i > 1024 ) {
             std::cout << "Incorrect number during character conversion: " << i << std::endl;
             return std::tuple<std::vector<wchar_t>, int>( REPLY, 1 );
         }
@@ -155,23 +159,26 @@ std::tuple< std::vector<int>, int> letters_to_numbers( const std::vector<wchar_t
 
     std::wstring str( &letters[0], (&letters[0]) + letters.size() );
 
-    std::wregex bits_regex(L"^[a-z0-9]+$");
-    if ( !std::regex_search( str, bits_regex ) ) {
-        std::cout << "Incorrect character in gcode" << std::endl;
-        return std::make_tuple( reply, 100 );
-    }
+    std::wregex bits_regex(L"^[0-9a-zA-ZµºÀ-ÖØ-áãäæ-öøú-ƔƖ-ơƤ-ǃǍ-Ǳǳ-ǵǷ-Ɉɋ-ɏḀ-ẝẟ-ỹỻͻ-ͽΆΈΑ-ΡΣ-ΩΫ-ψϋ-ώϐ-ϒϔ-Ϡϥϧ-ϩϫ-ϲϵϷ-Ϲϻ-ϿЀ-џѡ-ѣѥѫѱ-ѳѵѷѻѽѿ-ҁҋ-ҟҡ-ҥҩ-ҳҵ-һӀ-ӌӎӐ-ӿא-דטך-מס-פ]+$");
+    if ( !std::regex_search( str, bits_regex ) )
+        std::cout << "Incorrect character in gcode detected by range testing" << std::endl;
 
     int number;
     for( std::vector<wchar_t>::const_iterator it = letters.begin(); it != letters.end(); it ++ ) {
         const wchar_t *number_it = std::find( characters_begin, characters_end, *it );
-        number = std::distance( characters_begin, number_it );
-        reply.push_back( number );
+        if ( number_it == characters_end ) {
+            std::cout << "Incorrect character: " << single_to_narrow( *it ) << std::endl;
+            return std::make_tuple( reply, 100 );
+        } else {
+            number = std::distance( characters_begin, number_it );
+            reply.push_back( number );
+        }
     }
 
     return std::make_tuple( reply, 0 );
 }
 
-std::tuple< std::vector<int>, int> letters_to_numbers( const std::string & letters ) {
+std::tuple< std::vector<int>, int> letters_to_numbers( const std::wstring & letters ) {
     std::vector<wchar_t> letters2( letters.c_str(), letters.c_str() + letters.size() );
     return letters_to_numbers( letters2 );
 }
@@ -199,13 +206,13 @@ std::tuple< std::vector<int>, int > decode_zcode( const std::wstring & letters )
 }
 // }}}
 
-// FUNCTION: get_integer_from_base_36 {{{
-// Converts given base-36 string into integer
+// FUNCTION: get_integer_from_base_1024 {{{
+// Converts given base-1024 string into integer
 // Warning: it tagets integer (signed), so
 // the size of number is limited here (while
 // decode_zcode generates series of bits of
 // arbitrary length)
-std::tuple<int, int> get_integer_from_base_36( const std::wstring & letters ) {
+std::tuple<int, int> get_integer_from_base_1024( const std::wstring & letters ) {
     std::vector<int> bits;
     std::wstring workingvar = letters;
 
@@ -237,7 +244,7 @@ std::tuple<int, int> get_integer_from_base_36( const std::wstring & letters ) {
 
 // FUNCTION: encode_zcode_str01 {{{
 // Takes string of 0 and 1 that mark which zekylls are active
-// and encodes it to base 36 number expressed via a-z0-9
+// and encodes it to base-1024 number
 std::tuple< std::vector<wchar_t>, std::vector<int>, int > encode_zcode_str01( const std::string & sbits ) {
     std::vector<int> numbers;
     int error;
@@ -258,8 +265,7 @@ std::tuple< std::vector<wchar_t>, std::vector<int>, int > encode_zcode_str01( co
 
 // FUNCTION: encode_zcode_arr01 {{{
 // Takes array of 0 and 1 that mark which zekylls are
-// active and encodes it to base 36 number expressed
-// via a-z0-9
+// active and encodes it to base-1024 number
 std::tuple< std::vector<wchar_t>, std::vector<int>, int > encode_zcode_arr01( const std::vector<int> & bits ) {
     std::vector<int> numbers;
     int error;
@@ -267,6 +273,7 @@ std::tuple< std::vector<wchar_t>, std::vector<int>, int > encode_zcode_arr01( co
     if( error != 0 ) {
         return make_tuple( std::vector<wchar_t>(), std::vector<int>(), error + 8000 );
     }
+
     std::vector<wchar_t> code;
     std::tie( code, numbers, error ) = encode_zcode_24_bit_pack_numbers( numbers );
     if( error != 0 ) {
@@ -278,9 +285,9 @@ std::tuple< std::vector<wchar_t>, std::vector<int>, int > encode_zcode_arr01( co
 
 // FUNCTION: encode_zcode_24-bit_pack_numbers {{{
 // Takes 24-bit pack numbers whose bits mark which zekylls are active
-// and encodes them to base 36 number expressed via a-z0-9
+// and encodes them to base-1024 number
 std::tuple< std::vector<wchar_t>, std::vector<int>, int > encode_zcode_24_bit_pack_numbers( const std::vector<int> & numbers ) {
-    std::vector<int> nums_base36, workingvar;
+    std::vector<int> nums_base1024, workingvar;
     workingvar = numbers;
 
     bool all_zero = true;
@@ -293,8 +300,8 @@ std::tuple< std::vector<wchar_t>, std::vector<int>, int > encode_zcode_24_bit_pa
 
     while ( !all_zero ) {
         int error, subtracted;
-        std::tie( workingvar, subtracted, error ) = div_24_bit_pack_numbers_36( workingvar );
-        nums_base36.push_back( subtracted );
+        std::tie( workingvar, subtracted, error ) = div_24_bit_pack_numbers_1024( workingvar );
+        nums_base1024.push_back( subtracted );
 
         all_zero = true;
         for( unsigned int i = 0; i < workingvar.size(); i ++ ) {
@@ -305,17 +312,17 @@ std::tuple< std::vector<wchar_t>, std::vector<int>, int > encode_zcode_24_bit_pa
         }
     }
 
-    std::reverse( nums_base36.begin(), nums_base36.end() );
+    std::reverse( nums_base1024.begin(), nums_base1024.end() );
 
     std::vector<wchar_t> letters;
     int error;
-    tie( letters, error ) = numbers_to_letters( nums_base36 );
+    tie( letters, error ) = numbers_to_letters( nums_base1024 );
 
     if( error != 0 ) {
         error += 4000;
     }
 
-    return make_tuple( letters, nums_base36, error );
+    return make_tuple( letters, nums_base1024, error );
 }
 // }}}
 
@@ -352,7 +359,7 @@ std::tuple< std::vector<wchar_t>, int, int > div2( const std::vector<wchar_t> & 
             break;
         }
 
-        prepared_for_division = 36 * subtracted + numbers[cur];
+        prepared_for_division = 1024 * subtracted + numbers[cur];
     }
 
     // Now convert the result to letters
@@ -442,29 +449,32 @@ std::tuple< std::vector<int>, int > arr_01_to_24_bit_pack_numbers( const std::ve
 }
 // }}}
 
-// FUNCTION: div_24-bit_pack_numbers_36 {{{
+// FUNCTION: div_24-bit_pack_numbers_1024 {{{
 // input - series of 0 and 1 (bits marking which zekyll is active)
 // output - result of division and remainder 0 ... 35, also error
-std::tuple< std::vector<int>, int, int > div_24_bit_pack_numbers_36( const std::vector<int> & numbers ) {
+std::tuple< std::vector<int>, int, int > div_24_bit_pack_numbers_1024( const std::vector<int> & numbers ) {
     // Now operate on the array performing long-division
     int cur = 0, last = numbers.size() - 1;
 
     std::vector<int> result;
 
-    int subtracted;
-    int prepared_for_division = numbers[cur];
+    int64_t subtracted;
+    int64_t prepared_for_division = numbers[cur];
     while ( 1 ) {
-        int quotient = prepared_for_division / 36;
+        int quotient = prepared_for_division / 1024;
 
         result.push_back( quotient );
 
-        int recovered = quotient * 36;
+        int64_t recovered = quotient * 1024;
         subtracted = prepared_for_division - recovered;
+
 
         cur ++;
         if ( cur > last ) {
             break;
         }
+
+        // std::cout << "Div loop run, prepared_for_division: " << prepared_for_division << ", quotient: " << quotient << ", recovered: " << recovered << ", subtracted: " << subtracted << ", new numbers[cur]: " << numbers[cur] << std::endl;
 
         prepared_for_division = 16777216 * subtracted + numbers[cur];
 

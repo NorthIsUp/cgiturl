@@ -64,3 +64,29 @@ void PresentData(
     if ( file.size() > 0 )
         std::cout << RED "File:" RESET "      " << file << std::endl;
 }
+
+const char* single_to_narrow( wchar_t inchar ) {
+    wchar_t input_buffer[ 2 ] = { inchar, L'\0' };
+    static char output_buffer[ 8 ];
+    if( (size_t)-1 == wcstombs ( output_buffer, input_buffer, sizeof(output_buffer) ) ) {
+        output_buffer[0] = '\0';
+    }
+
+    return output_buffer;
+}
+
+const char* wide_to_narrow( wchar_t *input_buffer, int size ) {
+    static char output_buffer[ 65536 ];
+
+    wchar_t newbuf[size+1];
+    std::wcsncpy( newbuf, input_buffer, size );
+    newbuf[ size ] = L'\0';
+
+    if( (size_t)-1 == wcstombs ( output_buffer, newbuf, 65536 ) ) {
+        output_buffer[0] = '\0';
+    }
+
+    output_buffer[65535] = '\0';
+
+    return output_buffer;
+}

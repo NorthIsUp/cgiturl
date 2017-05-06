@@ -530,7 +530,7 @@ std::wstring build_gcode(
         int exam = error - 1630000;
         // Display if there is other error besides use of invalid characters
         if( exam % 163 ) {
-            std::cout << "Warning: Computation ended with code " << error << std::endl;
+            std::cout << "Warning: Computation ended with code: " << error << std::endl;
         } else {
             std::cout << "Allowed characters are: a-z, A-Z, 0-9, /, ~, -, _, ., space" << std::endl;
         }
