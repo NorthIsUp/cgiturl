@@ -527,6 +527,9 @@ std::wstring build_gcode(
         bits.insert( bits.end(), appendix.begin(), appendix.end() );
     }
 
+    // std::copy( bits.begin(), bits.end(), std::ostream_iterator<int>(std::cout,""));
+    // std::cout << std::endl;
+
     // Create Zcode
     std::vector<wchar_t> gcode;
     std::vector<int> numbers;
