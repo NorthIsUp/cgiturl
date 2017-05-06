@@ -89,113 +89,93 @@ process_meta_data( const std::vector<int> & _bits ) {
     decoded["unused4"]      = "";
     decoded["error"]        = "";
 
-    // Is there SS?
-    std::string str = strbits.substr( 0, codes["ss"].size() );
-    if( str == codes["ss"] ) {
-        strbits = strbits.substr( codes["ss"].size(), std::string::npos );
-        str = strbits.substr( 0, codes["ss"].size() );
-
-        // Is there immediate following SS?
-        if( str == codes["ss"] ) {
-            // We should skip one SS and there is nothing to decode
-            return std::make_tuple( codes["ss"].size(), decoded, 0 );
-        }
-
-        //
-        // Follows meta data, decode it
-        //
-
-        // keys of the 'decoded' hash
-        std::string current_selector = "error";
-        bool first = true;
-        int trylen;
-        std::string mat, trystr;
-        while ( 1 ) {
-            if ( first ) {
-                mat = "site_flags";
-                first = false;
-            } else {
-                mat="";
-                for ( trylen = 6; trylen <= 7; trylen ++ ) {
-                    // Take substring of len $trylen and check if
-                    // it matches any Huffman code
-                    trystr = strbits.substr( 0, trylen );
-                    if( rcodes.count( trystr ) ) {
-                        mat = rcodes[ trystr ];
-                        break;
-                    }
+    std::string current_selector = "error";
+    bool first = true;
+    int trylen;
+    std::string mat, trystr;
+    while ( 1 ) {
+        if ( first ) {
+            mat = "site_flags";
+            first = false;
+        } else {
+            mat="";
+            for ( trylen = 6; trylen <= 7; trylen ++ ) {
+                // Take substring of len $trylen and check if
+                // it matches any Huffman code
+                trystr = strbits.substr( 0, trylen );
+                if( rcodes.count( trystr ) ) {
+                    mat = rcodes[ trystr ];
+                    break;
                 }
-
-                if( mat == "" ) {
-                    return std::make_tuple( 0, decoded, 121 );
-                }
-
-                // Skip decoded bits
-                strbits = strbits.substr( trylen, std::string::npos );
             }
 
-            // Handle what has been matched, either selector or data
-            if ( mat == "ss" ) {
-                break;
-            } else if ( mat == "repo_rev_usr" ) {
-                if ( current_selector == "repo" ) {
-                    current_selector = "rev";
-                } else if ( current_selector == "rev" ) {
-                    current_selector = "user";
-                } else {
-                    current_selector = "repo";
-                }
-            } else if ( mat == "site_flags" ) {
-                if ( current_selector == "site_flags" ) {
-                    inlne = 1;
-                } else {
-                    inlne = 0;
-                    current_selector = "site_flags";
+            if( mat == "" ) {
+                return std::make_tuple( 0, decoded, 121 );
+            }
 
-                    // Short path for port number - conditional constant 16 bits
-                    if ( strbits[0] == '1' ) {
-                        std::bitset<16> bin_port( strbits.substr( 1, 16 ) );
-                        decoded["port"] = std::to_string( bin_port.to_ulong() );
-                        strbits = strbits.substr( 17, std::string::npos );
-                    } else {
-                        strbits = strbits.substr( 1, std::string::npos );
-                    }
+            // Skip decoded bits
+            strbits = strbits.substr( trylen, std::string::npos );
+        }
 
-                    // Short path for protocol - always 3 bits
-                    std::string proto_bits = strbits.substr( 0, 3 );
-                    decoded[ "proto" ] = rproto_code[ proto_bits ];
-                    strbits = strbits.substr( 3, std::string::npos );
-                }
-            } else if ( decoded.count( mat ) ) {
+        // Handle what has been matched, either selector or data
+        if ( mat == "ss" ) {
+            break;
+        } else if ( mat == "repo_rev_usr" ) {
+            if ( current_selector == "repo" ) {
+                current_selector = "rev";
+            } else if ( current_selector == "rev" ) {
+                current_selector = "user";
+            } else {
+                current_selector = "repo";
+            }
+        } else if ( mat == "site_flags" ) {
+            if ( current_selector == "site_flags" ) {
+                inlne = 1;
+            } else {
                 inlne = 0;
-                current_selector = mat;
-            } else {
-                if ( current_selector == "site_flags" ) {
-                    if ( inlne ) {
-                        decoded[ "site_inline" ].append( mat );
-                    } else {
-                        ptrdiff_t pos1 = std::find( incharacters_begin, incharacters_end, mat.c_str()[0] ) - incharacters_begin;
-                        ptrdiff_t pos2 = std::find( incharacters_begin, incharacters_end, '3') - incharacters_begin;
-                        if ( pos1 > pos2 ) {
-                            mat = rsites_flags[ mat ];
-                            if ( decoded[ "flags" ].size() > 0 )
-                                decoded[ "flags" ].append( "," );
-                            decoded[ "flags" ].append( mat );
-                        } else {
-                            mat = rsites_flags[ mat ];
-                            decoded[ "site" ] = mat;
-                        }
-                    }
+                current_selector = "site_flags";
+
+                // Short path for port number - conditional constant 16 bits
+                if ( strbits[0] == '1' ) {
+                    std::bitset<16> bin_port( strbits.substr( 1, 16 ) );
+                    decoded["port"] = std::to_string( bin_port.to_ulong() );
+                    strbits = strbits.substr( 17, std::string::npos );
                 } else {
-                    decoded[ current_selector ].append( mat );
+                    strbits = strbits.substr( 1, std::string::npos );
                 }
+
+                // Short path for protocol - always 3 bits
+                std::string proto_bits = strbits.substr( 0, 3 );
+                decoded[ "proto" ] = rproto_code[ proto_bits ];
+                strbits = strbits.substr( 3, std::string::npos );
+            }
+        } else if ( decoded.count( mat ) ) {
+            inlne = 0;
+            current_selector = mat;
+        } else {
+            if ( current_selector == "site_flags" ) {
+                if ( inlne ) {
+                    decoded[ "site_inline" ].append( mat );
+                } else {
+                    ptrdiff_t pos1 = std::find( incharacters_begin, incharacters_end, mat.c_str()[0] ) - incharacters_begin;
+                    ptrdiff_t pos2 = std::find( incharacters_begin, incharacters_end, '3') - incharacters_begin;
+                    if ( pos1 > pos2 ) {
+                        mat = rsites_flags[ mat ];
+                        if ( decoded[ "flags" ].size() > 0 )
+                            decoded[ "flags" ].append( "," );
+                        decoded[ "flags" ].append( mat );
+                    } else {
+                        mat = rsites_flags[ mat ];
+                        decoded[ "site" ] = mat;
+                    }
+                }
+            } else {
+                decoded[ current_selector ].append( mat );
             }
         }
-
-        REPLY = init_len - strbits.size();
-    } else {
-        REPLY = 0;
     }
+
+    REPLY = init_len - strbits.size();
 
     return std::make_tuple( REPLY, decoded, error );
 }
@@ -473,9 +453,6 @@ std::wstring build_gcode(
     int error=0, newerror;
     std::string invalidChars;
 
-    // Meta-data start
-    error += BitsStart( appendix );
-
     // Site
     std::tie( newerror, invalidChars ) = BitsProtoSitePort( appendix, protocol, site, port );
     error += newerror;
@@ -507,29 +484,12 @@ std::wstring build_gcode(
     // Meta-data end
     error += BitsStop( appendix );
 
-    // Empty meta-data?
-    error += BitsRemoveIfStartStop( appendix );
-
-    if( appendix.size() == 0 ) {
-        std::string rev_str_bits = trimmed(getCodes()[ "ss" ]);
-        std::reverse(rev_str_bits.begin(), rev_str_bits.end());
-
-        bool result;
-        std::tie( result, newerror ) = BitsCompareSuffix( bits, rev_str_bits );
-        error += newerror;
-        if( result ) {
-            // No metadata but 'ss' at end – add another one to
-            // mark that the 'ss' is a real data
-            error += insertBitsFromStrBits( bits, rev_str_bits );
-        }
-    } else {
-        // Append meta-data bits
-        // They go to end, and are reversed, so to decode, one can
-        // first reverse whole sequence, to have meta-data waiting
-        // in the beginning, in order
-        std::reverse( appendix.begin(), appendix.end() );
-        bits.insert( bits.end(), appendix.begin(), appendix.end() );
-    }
+    // Append meta-data bits
+    // They go to end, and are reversed, so to decode, one can
+    // first reverse whole sequence, to have meta-data waiting
+    // in the beginning, in order
+    std::reverse( appendix.begin(), appendix.end() );
+    bits.insert( bits.end(), appendix.begin(), appendix.end() );
 
     // Version
     bits.push_back( 0 );
