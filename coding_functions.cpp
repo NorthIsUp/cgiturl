@@ -474,20 +474,28 @@ std::wstring build_gcode(
     error += newerror;
     errorOnDisallowedChars( "site", invalidChars );
 
-    // Revision
-    std::tie( newerror, invalidChars ) = BitsWithPreamble( appendix, "rev",  rev );
+    // Repo is ensured to be always appended, even if somehow empty (should not happen)
+    std::tie( newerror, invalidChars ) = BitsWithPreamble( appendix, "repo_rev_usr", repo, true );
     error += newerror;
-    errorOnDisallowedChars( "rev", invalidChars );
+    errorOnDisallowedChars( "repository-path", invalidChars );
+
+    // Revision is always appended even if empty. The rationale
+    // is that without revision, URL will be probably (...) short
+    // anyway. Also, the main or at least serious motivation to
+    // use giturl is to embed revision
+    std::tie( newerror, invalidChars ) = BitsWithPreamble( appendix, "repo_rev_usr", rev, true );
+    error += newerror;
+    errorOnDisallowedChars( "revision", invalidChars );
+
+    // User is normal, optional
+    std::tie( newerror, invalidChars ) = BitsWithPreamble( appendix, "repo_rev_usr", user );
+    error += newerror;
+    errorOnDisallowedChars( "user-name", invalidChars );
 
     // File name
     std::tie( newerror, invalidChars ) = BitsWithPreamble( appendix, "file", file );
     error += newerror;
     errorOnDisallowedChars( "file", invalidChars );
-
-    // User/repo
-    std::tie( newerror, invalidChars ) = BitsWithPreamble( appendix, "repo", repo );
-    error += newerror;
-    errorOnDisallowedChars( "repo", invalidChars );
 
     // Meta-data end
     error += BitsStop( appendix );
@@ -544,11 +552,11 @@ std::wstring build_gcode(
 void create_codes_map() {
     codes["ss"]         = "100111";
     codes["file"]       = "101000";
-    codes["rev"]        = "101110";
-    codes["repo"]       = "101111";
+    codes["repo_rev_usr"] = "101111";
     codes["wordrev"]    = "101100";
     codes["site_flags"] = "100010";
     codes["unused1"]    = "100011";
+    codes["unused2"]    = "101110";
     codes["unused3"]    = "1100110";
     codes["unused4"]    = "101101";
 
@@ -626,11 +634,11 @@ void create_codes_map() {
 void create_rcodes_map() {
     rcodes["100111"]  = "ss";
     rcodes["101000"]  = "file";
-    rcodes["101110"]  = "rev";
-    rcodes["101111"]  = "repo";
+    rcodes["101111"]  = "repo_rev_usr";
     rcodes["101100"]  = "wordrev";
     rcodes["100010"]  = "site_flags";
     rcodes["100011"]  = "unused1";
+    rcodes["101110"]  = "unused2";
     rcodes["1100110"] = "unused3";
     rcodes["101101"]  = "unused4";
 
