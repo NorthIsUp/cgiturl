@@ -437,6 +437,104 @@ int BitsRemoveIfStartStop( std::vector<int> & bits ) {
     return error;
 }
 
+std::wstring build_gcode(
+        std::string & protocol,
+        std::string & user,
+        std::string & site,
+        std::string & port,
+        std::string & repo,
+        std::string & rev,
+        std::string & file,
+        std::vector<int> & selectors )
+{
+    std::vector<int> bits;
+
+    // Version
+    bits.push_back( 0 );
+    bits.push_back( 0 );
+
+    bits.insert( bits.end(), selectors.begin(), selectors.end() );
+    std::reverse( bits.begin(), bits.end() );
+
+    std::vector<int> appendix;
+    int error=0, newerror;
+    std::string invalidChars;
+
+    // Meta-data start
+    error += BitsStart( appendix );
+
+    // Site
+    std::tie( newerror, invalidChars ) = BitsProtoSitePort( appendix, protocol, site, port );
+    error += newerror;
+    errorOnDisallowedChars( "site", invalidChars );
+
+    // Revision
+    std::tie( newerror, invalidChars ) = BitsWithPreamble( appendix, "rev",  rev );
+    error += newerror;
+    errorOnDisallowedChars( "rev", invalidChars );
+
+    // File name
+    std::tie( newerror, invalidChars ) = BitsWithPreamble( appendix, "file", file );
+    error += newerror;
+    errorOnDisallowedChars( "file", invalidChars );
+
+    // User/repo
+    std::tie( newerror, invalidChars ) = BitsWithPreamble( appendix, "repo", repo );
+    error += newerror;
+    errorOnDisallowedChars( "repo", invalidChars );
+
+    // Meta-data end
+    error += BitsStop( appendix );
+
+    // Empty meta-data?
+    error += BitsRemoveIfStartStop( appendix );
+
+    if( appendix.size() == 0 ) {
+        std::string rev_str_bits = trimmed(getCodes()[ "ss" ]);
+        std::reverse(rev_str_bits.begin(), rev_str_bits.end());
+
+        bool result;
+        std::tie( result, newerror ) = BitsCompareSuffix( bits, rev_str_bits );
+        error += newerror;
+        if( result ) {
+            // No metadata but 'ss' at end – add another one to
+            // mark that the 'ss' is a real data
+            error += insertBitsFromStrBits( bits, rev_str_bits );
+        }
+    } else {
+        // Append meta-data bits
+        // They go to end, and are reversed, so to decode, one can
+        // first reverse whole sequence, to have meta-data waiting
+        // in the beginning, in order
+        std::reverse( appendix.begin(), appendix.end() );
+        bits.insert( bits.end(), appendix.begin(), appendix.end() );
+    }
+
+    // Create Zcode
+    std::vector<wchar_t> zcode;
+    std::vector<int> numbers;
+    int error2;
+    std::tie( zcode, numbers, error2 ) = encode_zcode_arr01( bits );
+    error += error2;
+
+    // Convert Zcode to QString
+    std::wstring zcode2( zcode.begin(), zcode.end() );
+
+    if( error ) {
+        int exam = error - 1630000;
+        // Display if there is other error besides use of invalid characters
+        if( exam % 163 ) {
+            std::cout << "Warning: Computation ended with code " << error << std::endl;
+        } else {
+            std::cout << "Allowed characters are: a-z, A-Z, 0-9, /, ~, -, _, ., space" << std::endl;
+        }
+
+        return std::wstring();
+    } else {
+        return zcode2;
+    }
+}
+
 void create_codes_map() {
     codes["ss"]         = "100111";
     codes["file"]       = "101000";
@@ -627,105 +725,6 @@ void create_server_maps() {
     rserver_site["bb"] = "bitbucket.org";
     rserver_site["gl"] = "gitlab.com";
 }
-
-std::wstring build_gcode(
-        std::string & protocol,
-        std::string & user,
-        std::string & site,
-        std::string & port,
-        std::string & repo,
-        std::string & rev,
-        std::string & file,
-        std::vector<int> & selectors )
-{
-    std::vector<int> bits;
-
-    // Version
-    bits.push_back( 0 );
-    bits.push_back( 0 );
-
-    bits.insert( bits.end(), selectors.begin(), selectors.end() );
-    std::reverse( bits.begin(), bits.end() );
-
-    std::vector<int> appendix;
-    int error=0, newerror;
-    std::string invalidChars;
-
-    // Meta-data start
-    error += BitsStart( appendix );
-
-    // Site
-    std::tie( newerror, invalidChars ) = BitsProtoSitePort( appendix, protocol, site, port );
-    error += newerror;
-    errorOnDisallowedChars( "site", invalidChars );
-
-    // Revision
-    std::tie( newerror, invalidChars ) = BitsWithPreamble( appendix, "rev",  rev );
-    error += newerror;
-    errorOnDisallowedChars( "rev", invalidChars );
-
-    // File name
-    std::tie( newerror, invalidChars ) = BitsWithPreamble( appendix, "file", file );
-    error += newerror;
-    errorOnDisallowedChars( "file", invalidChars );
-
-    // User/repo
-    std::tie( newerror, invalidChars ) = BitsWithPreamble( appendix, "repo", repo );
-    error += newerror;
-    errorOnDisallowedChars( "repo", invalidChars );
-
-    // Meta-data end
-    error += BitsStop( appendix );
-
-    // Empty meta-data?
-    error += BitsRemoveIfStartStop( appendix );
-
-    if( appendix.size() == 0 ) {
-        std::string rev_str_bits = trimmed(getCodes()[ "ss" ]);
-        std::reverse(rev_str_bits.begin(), rev_str_bits.end());
-
-        bool result;
-        std::tie( result, newerror ) = BitsCompareSuffix( bits, rev_str_bits );
-        error += newerror;
-        if( result ) {
-            // No metadata but 'ss' at end – add another one to
-            // mark that the 'ss' is a real data
-            error += insertBitsFromStrBits( bits, rev_str_bits );
-        }
-    } else {
-        // Append meta-data bits
-        // They go to end, and are reversed, so to decode, one can
-        // first reverse whole sequence, to have meta-data waiting
-        // in the beginning, in order
-        std::reverse( appendix.begin(), appendix.end() );
-        bits.insert( bits.end(), appendix.begin(), appendix.end() );
-    }
-
-    // Create Zcode
-    std::vector<wchar_t> zcode;
-    std::vector<int> numbers;
-    int error2;
-    std::tie( zcode, numbers, error2 ) = encode_zcode_arr01( bits );
-    error += error2;
-
-    // Convert Zcode to QString
-    std::wstring zcode2( zcode.begin(), zcode.end() );
-
-    if( error ) {
-        int exam = error - 1630000;
-        // Display if there is other error besides use of invalid characters
-        if( exam % 163 ) {
-            std::cout << "Warning: Computation ended with code " << error << std::endl;
-        } else {
-            std::cout << "Allowed characters are: a-z, A-Z, 0-9, /, ~, -, _, ., space" << std::endl;
-        }
-
-        return std::wstring(); 
-    } else {
-        return zcode2;
-    }
-}
-
 
 std::map< std::string, std::string > & getCodes() { return codes; }
 std::map< std::string, std::string > & getRCodes() { return rcodes; }
