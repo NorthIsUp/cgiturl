@@ -1,10 +1,12 @@
 cmake_minimum_required( VERSION 2.8.12 )
 project( cgiturl )
-set( QT_VERSION_REQ "5.2" )
-set( CMAKE_CXX_STANDARD 11 )
 
 set( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules" )
+
 include(FindPkgConfig)
+include(use_cxx11)
+
+use_cxx11()
 
 # Find includes in corresponding build directories
 set( CMAKE_INCLUDE_CURRENT_DIR ON )
