@@ -8,6 +8,7 @@
 #include <iostream>
 #include <locale>
 #include <regex>
+#include <cstdlib>
 #include <cstring>
 
 #include "optionparser.h"
@@ -68,7 +69,12 @@ const option::Descriptor usage[] =
 
 int main( int argc, char * argv[]) {
     std::locale initial_locale;
-    std::locale::global ( std::locale ("") ); // use system environment to set locale
+    std::string sys_locale_str = std::string( std::getenv( "LANG" ) );
+    if ( sys_locale_str.size() > 0 ) {
+        std::locale::global ( std::locale ("") ); // use system environment to set locale
+    } else {
+        std::locale::global ( std::locale ("en_US.UTF-8") );
+    }
 
     create_codes_map();
     create_rcodes_map();
