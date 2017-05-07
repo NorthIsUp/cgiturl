@@ -18,6 +18,7 @@
 #include "coding_functions.h"
 #include "math_functions.h"
 #include "util.h"
+#include <cstddef>
 #include <iostream>
 #include <sstream>
 #include <string>
@@ -157,8 +158,8 @@ process_meta_data( const std::vector<int> & _bits ) {
                 if ( inlne ) {
                     decoded[ "site_inline" ].append( mat );
                 } else {
-                    ptrdiff_t pos1 = std::find( incharacters_begin, incharacters_end, mat.c_str()[0] ) - incharacters_begin;
-                    ptrdiff_t pos2 = std::find( incharacters_begin, incharacters_end, '3') - incharacters_begin;
+                    std::ptrdiff_t pos1 = std::find( incharacters_begin, incharacters_end, mat.c_str()[0] ) - incharacters_begin;
+                    std::ptrdiff_t pos2 = std::find( incharacters_begin, incharacters_end, '3') - incharacters_begin;
                     if ( pos1 > pos2 ) {
                         mat = rsites_flags[ mat ];
                         if ( decoded[ "flags" ].size() > 0 )
