@@ -8,6 +8,7 @@
 #include <iostream>
 #include <locale>
 #include <regex>
+#include <cstring>
 
 #include "optionparser.h"
 
