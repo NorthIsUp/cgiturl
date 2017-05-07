@@ -351,6 +351,11 @@ int main( int argc, char * argv[]) {
 
             if ( decoded[ "site" ].size() == 0 ) {
                 decoded[ "site" ] = decoded[ "site_inline" ];
+                if ( decoded[ "site" ].size() == 0 ) {
+                    decoded[ "site" ] = "github.com";
+                }
+            } else {
+                decoded[ "site" ] = getRServerSite()[ decoded[ "site" ] ];
             }
 
             PresentData( decoded["proto"], decoded["user"], decoded["site"], decoded["port"], decoded["repo"], decoded["rev"], decoded["file"] );

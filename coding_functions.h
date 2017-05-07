@@ -35,6 +35,8 @@ std::map< std::string, std::string > & getRCodes();
 std::map< std::string, std::string > & getSites();
 std::map< std::string, std::string > & getRSites();
 std::map< std::string, std::string > & getNames();
+std::map< std::string, std::string > & getServerSite();
+std::map< std::string, std::string > & getRServerSite();
 
 std::tuple< int, std::map< std::string, std::string >, int >
 process_meta_data( const std::vector<int> & _bits );

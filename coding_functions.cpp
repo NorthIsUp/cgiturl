@@ -737,3 +737,5 @@ std::map< std::string, std::string > & getRCodes() { return rcodes; }
 std::map< std::string, std::string > & getSitesFlags() { return sites_flags; }
 std::map< std::string, std::string > & getRSitesFlags() { return rsites_flags; }
 std::map< std::string, std::string > & getNames() { return names; }
+std::map< std::string, std::string > & getServerSite() { return server_site; }
+std::map< std::string, std::string > & getRServerSite() { return rserver_site; }
