@@ -46,13 +46,14 @@ struct Arg: public option::Arg
 };
 
 
-enum  optionIndex { UNKNOWN, HELP, REV, PATH, DECODE };
+enum  optionIndex { UNKNOWN, HELP, QUIET, REV, PATH, DECODE };
 const option::Descriptor usage[] =
 {
  { UNKNOWN, 0, "", "", option::Arg::None, "USAGE: cgiturl <URL> [options]\n"
                                           "       cgiturl -d <GitURL|gcode>\n\n"
                                           "Options:" },
  { HELP,    0, "h", "help",     option::Arg::None, " -h, --help              Print help and exit" },
+ { QUIET,   0, "q", "quiet",    option::Arg::None, " -q, --quiet             Less verbose output" },
  { REV,     0, "r", "revision", Arg::NonEmpty,     " -r <r>, --revision <r>  Which revision to encode in GitURL" },
  { PATH,    0, "p", "path",     Arg::NonEmpty,     " -p <p>, --path <p>      A path to encode in GitURL" },
  { DECODE,  0, "d", "decode",   Arg::NonEmpty,     " -d <c>, --decode <c>    GitURL or gcode to decode" },
@@ -315,11 +316,17 @@ int main( int argc, char * argv[]) {
         }
         std::vector<int> selectors;
 
-        std::cout << std::endl;
-        PresentData( protocol, user, site, port, upath, rev, file );
+        if ( options[QUIET].count() == 0 ) {
+            std::cout << std::endl;
+            PresentData( protocol, user, site, port, upath, rev, file );
+        }
 
         std::wstring gcode = build_gcode( protocol, user, site, port, upath, rev, file, selectors );
-        std::cout << std::endl << MAGENTA << "gitu://" << wide_to_narrow( &gcode[0], gcode.size() ) << RESET << std::endl;
+
+        if ( options[QUIET].count() == 0 )
+            std::cout << std::endl;
+
+        std::cout << MAGENTA << "gitu://" << wide_to_narrow( &gcode[0], gcode.size() ) << RESET << std::endl;
     } else {
         std::wstring gcode( std::strlen( options[DECODE].last()->arg ), L' ' );
         gcode.resize( std::mbstowcs( &gcode[0], options[DECODE].last()->arg, std::strlen( options[DECODE].last()->arg ) ) );
