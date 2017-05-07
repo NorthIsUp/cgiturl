@@ -40,6 +40,10 @@ Only following characters can appear in input data – in the server, repositor
 
 # Characters used in base-1024 encoding
 
+The characters are carefully chosen so that double clicking GitURL selects the whole `gcode`.
+Asian scripts are not used because characters from them are double-width and they would consume
+the space saved by the compressions.
+
 ```
 0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ
 µºÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝÞßàáãäæçèéêëìíîïðñòóôõöøúûüýþÿĀ
