@@ -365,9 +365,13 @@ int main( int argc, char * argv[]) {
                 decoded[ "site" ] = getRServerSite()[ decoded[ "site" ] ];
             }
 
-            PresentData( decoded["proto"], decoded["user"], decoded["site"], decoded["port"], decoded["repo"], decoded["rev"], decoded["file"] );
-            std::cout << std::endl;
-            PresentURL( decoded["proto"], decoded["user"], decoded["site"], decoded["port"], decoded["repo"], decoded["rev"], decoded["file"] );
+            if ( options[QUIET].count() > 0 ) {
+                PresentURL( decoded["proto"], decoded["user"], decoded["site"], decoded["port"], decoded["repo"], decoded["rev"], decoded["file"], true );
+            } else {
+                PresentData( decoded["proto"], decoded["user"], decoded["site"], decoded["port"], decoded["repo"], decoded["rev"], decoded["file"] );
+                std::cout << std::endl;
+                PresentURL( decoded["proto"], decoded["user"], decoded["site"], decoded["port"], decoded["repo"], decoded["rev"], decoded["file"] );
+            }
         }
     }
     return 0;
