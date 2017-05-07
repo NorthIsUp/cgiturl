@@ -60,8 +60,8 @@ const option::Descriptor usage[] =
 
  { UNKNOWN, 0, "", "",          option::Arg::None, "\nExamples:\n"
                                "  giturl https://github.com/zdharma/giturl -p lib/codes_huffman\n"
-                               "  giturl -d 3ếЭãѿŒΓȏĤÒṄÅṥҫȜẙПȟϛṄӗŀєþ\n"
-                               "  giturl -d gitu://VЯĦṟěň4ӊǮ4ХƵȽȤẢ4ФḸțḊƵȽȟϛṄӗŀєþ\n" },
+                               "  giturl -d ŬṽǚǫoŒẗ6ẏȅcЭÑẩőn4ầŘїệαЃȣϟṈӛŀї\n"
+                               "  giturl -d gitu://ŬṽǚǫoŒẗ6ẏȅcЭÑẩőn4ầŘїệαЃȣϟṈӛŀї\n" },
  {0,0,0,0,0,0}
 };
 
