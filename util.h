@@ -73,6 +73,17 @@ void PresentData(
         std::string & file
 );
 
+void PresentURL(
+        std::string & protocol,
+        std::string & user,
+        std::string & site,
+        std::string & port,
+        std::string & repo,
+        std::string & rev,
+        std::string & file,
+        bool extended = false
+);
+
 const char* single_to_narrow( wchar_t inchar );
 
 const char* wide_to_narrow( wchar_t *input_buffer, int size );

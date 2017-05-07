@@ -45,6 +45,34 @@ void PresentData(
         std::cout << RED "File:" RESET "      " << file << std::endl;
 }
 
+void PresentURL(
+        std::string & protocol,
+        std::string & user,
+        std::string & site,
+        std::string & port,
+        std::string & repo,
+        std::string & rev,
+        std::string & file,
+        bool extended
+) {
+    std::string out = protocol;
+    out += "://" + site;
+    if ( port.size() > 0 )
+        out += ":" + port;
+    out += "/" + repo;
+
+    if ( extended ) {
+        std::cout << MAGENTA << out;
+        if ( rev.size() > 0 )
+            std::cout << " / rev:" << rev;
+        if ( file.size() > 0 )
+            std::cout << " / file:" << file;
+        std::cout << std::endl;
+    } else {
+        std::cout << MAGENTA << out << std::endl;
+    }
+}
+
 const char* single_to_narrow( wchar_t inchar ) {
     wchar_t input_buffer[ 2 ] = { inchar, L'\0' };
     static char output_buffer[ 8 ];

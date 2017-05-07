@@ -359,6 +359,8 @@ int main( int argc, char * argv[]) {
             }
 
             PresentData( decoded["proto"], decoded["user"], decoded["site"], decoded["port"], decoded["repo"], decoded["rev"], decoded["file"] );
+            std::cout << std::endl;
+            PresentURL( decoded["proto"], decoded["user"], decoded["site"], decoded["port"], decoded["repo"], decoded["rev"], decoded["file"] );
         }
     }
     return 0;
