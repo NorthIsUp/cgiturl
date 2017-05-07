@@ -59,9 +59,9 @@ const option::Descriptor usage[] =
  { DECODE,  0, "d", "decode",   Arg::NonEmpty,     " -d <c>, --decode <c>    GitURL or gcode to decode" },
 
  { UNKNOWN, 0, "", "",          option::Arg::None, "\nExamples:\n"
-                               "  giturl https://github.com/zdharma/giturl -p lib/codes_huffman\n"
-                               "  giturl -d ŬṽǚǫoŒẗ6ẏȅcЭÑẩőn4ầŘїệαЃȣϟṈӛŀї\n"
-                               "  giturl -d gitu://ŬṽǚǫoŒẗ6ẏȅcЭÑẩőn4ầŘїệαЃȣϟṈӛŀї\n" },
+                               "  cgiturl https://github.com/zdharma/giturl -p lib/codes_huffman\n"
+                               "  cgiturl -d ŬṽǚǫoŒẗ6ẏȅcЭÑẩőn4ầŘїệαЃȣϟṈӛŀї\n"
+                               "  cgiturl -d gitu://ŬṽǚǫoŒẗ6ẏȅcЭÑẩőn4ầŘїệαЃȣϟṈӛŀї\n" },
  {0,0,0,0,0,0}
 };
 
