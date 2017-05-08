@@ -69,7 +69,11 @@ const option::Descriptor usage[] =
 
 int main( int argc, char * argv[]) {
     std::locale initial_locale;
-    std::string sys_locale_str = std::string( std::getenv( "LANG" ) );
+    std::string sys_locale_str;
+
+    if ( std::getenv( "LANG" ) )
+        sys_locale_str = std::string( std::getenv( "LANG" ) );
+
     if ( sys_locale_str.size() > 0 ) {
         std::locale::global ( std::locale ("") ); // use system environment to set locale
     } else {
