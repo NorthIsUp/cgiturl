@@ -3,10 +3,12 @@ project( cgiturl )
 
 set( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules" )
 
-include(FindPkgConfig)
-include(use_cxx11)
+include( FindPkgConfig )
+include( compiler_req )
+include( use_cxx11 )
 
-use_cxx11()
+compiler_req()      # test required compiler versions
+use_cxx11()         # configure c++11 usage
 
 # Find includes in corresponding build directories
 set( CMAKE_INCLUDE_CURRENT_DIR ON )
