@@ -1,0 +1,17 @@
+# -*- Mode: sh; sh-indentation: 4; indent-tabs-mode: nil; sh-basic-offset: 4; -*-
+# vim:ft=zsh:sw=4:sts=4:et
+
+typeset -ga errors1
+errors1+=(
+    # Trailing functions in stack trace are all /usr/lib/system/*
+    "zsh_main / setupvals / getpwuid / *"
+
+    # Possibly lost due to pointer tricks of sds library
+    # Note glob after "zrtie_cmd" - it is a static function
+    # and can have a suffix, on Linux
+    "* / bin_ztie / redis_main_entry / zrtie_cmd* / type / redisCommand / * / sdsMakeRoomFor / *"
+
+    # If single error spans 2 blocks (not separated by blank line in valgrind's output)
+    # then use "--BLOCK--" to match in between the blocks
+    "* / bin_ztie / --BLOCK-- / * / malloc"
+)
