@@ -72,14 +72,15 @@ else
 fi
 
 local ctarg    # current arg
+local line     # Decomposition trick var
 local -a targs # evaluated test_bin args, non-evaluated Valgrind args
 integer success failure skipped count=0
 
 for file in "${(f)VATS_testfiles}"; do
   # Prepare test_bin-args
   targs=()
-  for ctarg in "${=test_bin_args[@]}"; do
-    eval "targs+=( \"$ctarg\" )"
+  for ctarg in "${(z@)test_bin_args}"; do
+    eval "print -rl $ctarg | while read line; do targs+=( \"\${(Q)line}\" ); done"
   done
 
   (( ++ count ))
