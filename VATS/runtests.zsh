@@ -80,7 +80,7 @@ for file in "${(f)VATS_testfiles}"; do
   # Prepare test_bin-args
   targs=()
   for ctarg in "${(z@)test_bin_args}"; do
-    eval "print -rl $ctarg | while read line; do targs+=( \"\${(Q)line}\" ); done"
+    eval "print -rl -- $ctarg | while read line; do targs+=( \"\${(Q)line}\" ); done"
   done
 
   (( ++ count ))
