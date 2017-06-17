@@ -73,7 +73,7 @@ fi
 
 local ctarg    # current arg
 local -a targs # evaluated test_bin args, non-evaluated Valgrind args
-integer success failure skipped retval
+integer success failure skipped count=0
 
 for file in "${(f)VATS_testfiles}"; do
   # Prepare test_bin-args
@@ -82,11 +82,14 @@ for file in "${(f)VATS_testfiles}"; do
     eval "targs+=( \"$ctarg\" )"
   done
 
+  (( ++ count ))
+
   # Invoke Valgrind (through zsh-valgrind-parse.cmd)
   $cmd "${valargs[@]}" "$test_bin" "${targs[@]}"
 done
+
 print "**************************************"
-print "${#${(f)VATS_testfiles}} test file(s) were ran"
+print "$count test file(s) were ran"
 print "**************************************"
 
 return 0
