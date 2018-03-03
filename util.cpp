@@ -53,7 +53,8 @@ void PresentURL(
         std::string & repo,
         std::string & rev,
         std::string & file,
-        bool extended
+        bool extended,
+        bool noansi
 ) {
     std::string out = protocol;
     out += "://" + site;
@@ -62,14 +63,22 @@ void PresentURL(
     out += "/" + repo;
 
     if ( extended ) {
-        std::cout << MAGENTA << out;
+        if ( noansi == false )
+            std::cout << MAGENTA;
+        std::cout << out;
         if ( rev.size() > 0 )
             std::cout << " / rev:" << rev;
         if ( file.size() > 0 )
             std::cout << " / file:" << file;
+        if ( noansi == false )
+            std::cout << RESET;
         std::cout << std::endl;
     } else {
-        std::cout << MAGENTA << out << std::endl;
+        if ( noansi == false ) {
+            std::cout << MAGENTA << out << RESET << std::endl;
+        } else {
+            std::cout << out << std::endl;
+        }
     }
 }
 

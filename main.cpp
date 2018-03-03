@@ -382,11 +382,16 @@ int main( int argc, char * argv[]) {
             }
 
             if ( options[QUIET].count() > 0 ) {
-                PresentURL( decoded["proto"], decoded["user"], decoded["site"], decoded["port"], decoded["repo"], decoded["rev"], decoded["file"], true );
+                PresentURL( decoded["proto"], decoded["user"], decoded["site"], decoded["port"],
+                            decoded["repo"], decoded["rev"], decoded["file"],
+                            true, options[NOANSI].count() != 0 );
             } else {
-                PresentData( decoded["proto"], decoded["user"], decoded["site"], decoded["port"], decoded["repo"], decoded["rev"], decoded["file"] );
+                PresentData( decoded["proto"], decoded["user"], decoded["site"], decoded["port"],
+                             decoded["repo"], decoded["rev"], decoded["file"] );
                 std::cout << std::endl;
-                PresentURL( decoded["proto"], decoded["user"], decoded["site"], decoded["port"], decoded["repo"], decoded["rev"], decoded["file"] );
+                PresentURL( decoded["proto"], decoded["user"], decoded["site"], decoded["port"],
+                            decoded["repo"], decoded["rev"], decoded["file"],
+                            false, options[NOANSI].count() != 0 );
             }
         }
     }

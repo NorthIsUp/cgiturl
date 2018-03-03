@@ -81,7 +81,8 @@ void PresentURL(
         std::string & repo,
         std::string & rev,
         std::string & file,
-        bool extended = false
+        bool extended = false,
+        bool noansi = false
 );
 
 const char* single_to_narrow( wchar_t inchar );
