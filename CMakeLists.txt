@@ -44,3 +44,5 @@ add_executable( cgiturl ${SRCS} )
 target_link_libraries( cgiturl ${ICONV_LIBRARIES} )
 
 target_include_directories( cgiturl PRIVATE ${ICONV_INCLUDE_DIR} )
+
+install(TARGETS cgiturl RUNTIME DESTINATION bin)
