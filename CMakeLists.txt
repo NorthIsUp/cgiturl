@@ -45,4 +45,5 @@ target_link_libraries( cgiturl ${ICONV_LIBRARIES} )
 
 target_include_directories( cgiturl PRIVATE ${ICONV_INCLUDE_DIR} )
 
-install(TARGETS cgiturl RUNTIME DESTINATION bin)
+install( TARGETS cgiturl RUNTIME DESTINATION bin )
+add_custom_target( uninstall "${CMAKE_COMMAND}" -P "${CMAKE_MODULE_PATH}/uninstall.cmake" )
