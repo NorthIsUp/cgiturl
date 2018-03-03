@@ -14,21 +14,6 @@ use_cxx11()         # configure c++11 usage
 set( CMAKE_INCLUDE_CURRENT_DIR ON )
 
 #
-# Iconv
-#
-
-find_path( ICONV_INCLUDE_DIRS iconv.h )
-find_library( ICONV_LIBRARIES NAMES iconv libiconv libiconv-2 c )
-
-if( NOT ICONV_INCLUDE_DIRS OR NOT ICONV_LIBRARIES )
-    message( "=" )
-    message( "= Warning: Iconv not found, cgiturl might not build =" )
-    message( "=" )
-else()
-    message( "= Found Iconv =" )
-endif()
-
-#
 # Follow source files, headers
 #
 
@@ -41,9 +26,6 @@ SET( SRCS
 
 add_executable( cgiturl ${SRCS} )
 
-target_link_libraries( cgiturl ${ICONV_LIBRARIES} )
-
-target_include_directories( cgiturl PRIVATE ${ICONV_INCLUDE_DIR} )
-
 install( TARGETS cgiturl RUNTIME DESTINATION bin )
+
 add_custom_target( uninstall "${CMAKE_COMMAND}" -P "${CMAKE_MODULE_PATH}/uninstall.cmake" )
