@@ -67,9 +67,9 @@ void PresentURL(
             std::cout << MAGENTA;
         std::cout << out;
         if ( rev.size() > 0 )
-            std::cout << " / rev:" << rev;
+            std::cout << " /  rev:" << rev;
         if ( file.size() > 0 )
-            std::cout << " / file:" << file;
+            std::cout << " /  file:" << file;
         if ( noansi == false )
             std::cout << RESET;
         std::cout << std::endl;
