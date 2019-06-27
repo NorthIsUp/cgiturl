@@ -25,11 +25,11 @@ SET( SRCS
 )
 
 
-if(NOT DEFINED ENV{NO_CGITURL})
+if(NOT DEFINED ENV{GITURL_NO_CGITURL})
     add_executable( cgiturl ${SRCS} )
 endif()
 
-if(NOT DEFINED ENV{NO_CGITURL})
+if(NOT DEFINED ENV{GITURL_NO_CGITURL})
     install( TARGETS cgiturl RUNTIME DESTINATION bin )
 endif()
 
