@@ -24,8 +24,13 @@ SET( SRCS
     util.cpp
 )
 
-add_executable( cgiturl ${SRCS} )
 
-install( TARGETS cgiturl RUNTIME DESTINATION bin )
+if(NOT DEFINED ENV{NO_CGITURL})
+    add_executable( cgiturl ${SRCS} )
+endif()
+
+if(NOT DEFINED ENV{NO_CGITURL})
+    install( TARGETS cgiturl RUNTIME DESTINATION bin )
+endif()
 
 add_custom_target( uninstall "${CMAKE_COMMAND}" -P "${CMAKE_MODULE_PATH}/uninstall.cmake" )
